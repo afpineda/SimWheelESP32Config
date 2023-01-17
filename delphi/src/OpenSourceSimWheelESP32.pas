@@ -1,10 +1,18 @@
+{****************************************************************************
+ * @author Ángel Fernández Pineda. Madrid. Spain.
+ * @date 2023-01-17
+ * @brief Configuration app for ESP32-based open source sim wheels
+ *
+ * @copyright Creative Commons Attribution 4.0 International (CC BY 4.0)
+ *
+****************************************************************************}
+
 unit OpenSourceSimWheelESP32;
 
 interface
 
 uses
   System.SysUtils;
-// System.Generics.Collections;
 
 {$Z1}
 
@@ -52,7 +60,6 @@ type
 
   public
 
-    // class function GetDevices(): TSimWheelList;
     class procedure GetDevices(onDiscovery: TSimWheelDiscoveryProc);
 
   private
@@ -565,14 +572,6 @@ end;
 
 // --------------------------------------------------------------------------
 
-procedure TSimWheel.SetConfig(const [Ref] aConfig: TSimWheel.TConfigReport);
-begin
-  SendConfigReport(@aConfig);
-  Update;
-end;
-
-// --------------------------------------------------------------------------
-
 procedure TSimWheel.SetClutchMode(const aMode: TSimWheel.TClutchMode);
 begin
   ClearConfigReport(@FConfig);
@@ -660,5 +659,11 @@ begin
 end;
 
 // --------------------------------------------------------------------------
+
+procedure TSimWheel.SetConfig(const [Ref] aConfig: TSimWheel.TConfigReport);
+begin
+  SendConfigReport(@aConfig);
+  Update;
+end;
 
 end.

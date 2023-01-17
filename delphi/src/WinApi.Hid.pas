@@ -1,3 +1,12 @@
+{****************************************************************************
+ * @brief Partial translation of "Hidsdi.h"
+ *
+ * Portions created by Microsoft are
+ * Copyright (C) 1995-1999 Microsoft Corporation.
+ * All Rights Reserved.
+ *
+****************************************************************************}
+
 unit WinApi.Hid;
 
 interface

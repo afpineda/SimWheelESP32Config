@@ -12,10 +12,8 @@ object Form_main: TForm_main
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   Position = poDefault
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object PC_main: TPageControl
     Left = 0
@@ -26,7 +24,6 @@ object Form_main: TForm_main
     Align = alClient
     TabOrder = 0
     OnChange = PC_mainChange
-    ExplicitWidth = 394
     object Page_Devices: TTabSheet
       Caption = 'Devices'
       object Lbl_DeviceReady: TLabel
@@ -76,8 +73,6 @@ object Form_main: TForm_main
         Caption = 'Scan'
         TabOrder = 0
         OnClick = Btn_ScanClick
-        ExplicitTop = 96
-        ExplicitWidth = 386
       end
       object Lbl_TooManyDevices: TStaticText
         Left = 0
@@ -97,7 +92,6 @@ object Form_main: TForm_main
         Font.Style = []
         ParentFont = False
         TabOrder = 1
-        ExplicitWidth = 386
       end
     end
     object Page_Clutch: TTabSheet
@@ -129,9 +123,6 @@ object Form_main: TForm_main
         Constraints.MinHeight = 81
         ShowCaption = False
         TabOrder = 1
-        ExplicitTop = 105
-        ExplicitWidth = 386
-        ExplicitHeight = 138
         object Lbl_BitePoint: TLabel
           Left = 0
           Top = 0
@@ -160,7 +151,6 @@ object Form_main: TForm_main
           TabOrder = 0
           TickMarks = tmBoth
           OnChange = TB_BitePointChange
-          ExplicitWidth = 386
         end
         object ButtonGroup1: TButtonGroup
           Left = 496
@@ -179,8 +169,6 @@ object Form_main: TForm_main
           Caption = 'Autocalibrate analog clutch paddles'
           TabOrder = 2
           OnClick = Btn_ClutchAutocalClick
-          ExplicitTop = 96
-          ExplicitWidth = 386
         end
       end
     end
@@ -199,7 +187,6 @@ object Form_main: TForm_main
           'Regular buttons')
         TabOrder = 0
         OnClick = RG_AltButtonsModeClick
-        ExplicitWidth = 386
       end
     end
     object Page_battery: TTabSheet
@@ -244,12 +231,59 @@ object Form_main: TForm_main
         Caption = 'Autocalibrate battery'
         TabOrder = 0
         OnClick = Btn_AutocalBatteryClick
-        ExplicitWidth = 386
       end
     end
     object Page_Presets: TTabSheet
-      Caption = 'Load/Save'
+      Caption = 'Presets'
       ImageIndex = 4
+      object Btn_LoadFromFile: TButton
+        Left = 0
+        Top = 33
+        Width = 326
+        Height = 33
+        Align = alTop
+        Caption = 'Load from file'
+        TabOrder = 0
+        OnClick = Btn_LoadFromFileClick
+        ExplicitTop = 0
+      end
+      object Btn_SaveToFile: TButton
+        Left = 0
+        Top = 0
+        Width = 326
+        Height = 33
+        Align = alTop
+        Caption = 'Save to file'
+        TabOrder = 1
+        OnClick = Btn_SaveToFileClick
+        ExplicitTop = 8
+      end
     end
+  end
+  object Dlg_FileOpen: TFileOpenDialog
+    DefaultExtension = '*.swh'
+    FavoriteLinks = <>
+    FileTypes = <
+      item
+        DisplayName = 'Sim wheel presets'
+        FileMask = '*.swh'
+      end>
+    Options = [fdoStrictFileTypes, fdoPathMustExist, fdoFileMustExist, fdoNoTestFileCreate, fdoDontAddToRecent]
+    Title = 'Load from file'
+    Left = 199
+    Top = 220
+  end
+  object Dlg_FileSave: TFileSaveDialog
+    DefaultExtension = '*.swh'
+    FavoriteLinks = <>
+    FileTypes = <
+      item
+        DisplayName = 'Sim wheel preset'
+        FileMask = '*.swh'
+      end>
+    Options = [fdoOverWritePrompt, fdoStrictFileTypes, fdoPathMustExist, fdoCreatePrompt, fdoNoReadOnlyReturn, fdoDontAddToRecent]
+    Title = 'Save to file'
+    Left = 267
+    Top = 220
   end
 end

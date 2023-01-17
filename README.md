@@ -2,11 +2,34 @@
 
 A companion app for [ESP32 based open source wireless steering wheel](https://github.com/afpineda/OpenSourceSimWheelESP32).
 
+<img src="file:///X:/GitHubRepos/SimWheelESP32Config/resources/Screenshot.png" title="" alt="" data-align="center">
+
 ## Features
 
-- Load/save settings
-- Select working mode of clutch paddles (if available)
-- Select working mode of "ALT" buttons (if available)
+- Load/save settings.
+- Select working mode of clutch paddles.
+- Select working mode of "ALT" buttons.
 - Set clutch bite point.
-- Force autocalibration of analog clutch paddles (if available)
-- Force battery autocalibration (if available). Not needed if the battery was previously calibrated.
+- Force auto-calibration of analog clutch paddles.
+- Force battery auto-calibration. Not available if the battery was previously calibrated.
+- Windows 64 bits only.
+
+## Change log
+
+### 1.0.0
+
+- First release with basic functionality. 
+
+- Windows only. Delphi implementation.
+
+## Future improvements
+
+**NOT GUARANTEED**
+
+- *Electron.js* implementation for portability.
+
+- Auto-detect game and car in order to apply a preset.
+
+- Store presets into a Sqlite database.
+
+
