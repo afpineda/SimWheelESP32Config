@@ -2,7 +2,7 @@
 
 A companion app for [ESP32 based open source wireless steering wheel](https://github.com/afpineda/OpenSourceSimWheelESP32).
 
-<img src="file:///X:/GitHubRepos/SimWheelESP32Config/resources/Screenshot.png" title="" alt="" data-align="center">
+![Screenshot](./resources/Screenshot.png)
 
 ## Features
 
@@ -31,5 +31,3 @@ A companion app for [ESP32 based open source wireless steering wheel](https://gi
 - Auto-detect game and car in order to apply a preset.
 
 - Store presets into a Sqlite database.
-
-
