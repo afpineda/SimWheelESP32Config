@@ -1,11 +1,11 @@
-{****************************************************************************
- * @author Ángel Fernández Pineda. Madrid. Spain.
- * @date 2023-01-17
- * @brief Configuration app for ESP32-based open source sim wheels
- *
- * @copyright Creative Commons Attribution 4.0 International (CC BY 4.0)
- *
-****************************************************************************}
+{ ****************************************************************************
+  * @author Ángel Fernández Pineda. Madrid. Spain.
+  * @date 2023-01-17
+  * @brief Configuration app for ESP32-based open source sim wheels
+  *
+  * @copyright Creative Commons Attribution 4.0 International (CC BY 4.0)
+  *
+  **************************************************************************** }
 
 unit OpenSourceSimWheelESP32;
 
@@ -63,10 +63,10 @@ type
     class procedure GetDevices(onDiscovery: TSimWheelDiscoveryProc);
 
   private
-    constructor Create(const handle: THandle; const devicePath: string;
-      const majorVersion: UInt16; const minorVersion: UInt16;
-      const flags: UInt16; const inputReportSize, outputReportSize,
-      featureReportSize: integer); overload;
+//    constructor Create(const handle: THandle; const devicePath: string;
+//      const majorVersion: UInt16; const minorVersion: UInt16;
+//      const flags: UInt16; const inputReportSize, outputReportSize,
+//      featureReportSize: integer); overload;
 
   public
     constructor Create(const devicePath: string); overload;
@@ -154,228 +154,25 @@ end;
 // --------------------------------------------------------------------------
 
 function CheckCapabilitiesReport(const pCaps: PCapabilitiesReport): boolean;
+
+  function hasNoCap(const aCap: TSimWheel.TCapabilities; const flags: UInt16)
+    : boolean; inline;
+  begin
+    Result := (flags and (1 shl UInt16(aCap))) = 0;
+  end;
+
 begin
   Result := (pCaps^.magicNumber = MAGIC_NUMBER) and
     (pCaps^.majorVersion = DATA_MAJOR_VERSION); // and
   // (pCaps^.minorVersion >=
-  // DATA_MINOR_VERSION);((((
+  // DATA_MINOR_VERSION);
+  if (Result and hasNoCap(CAP_CLUTCH_BUTTON, pCaps^.flags) and
+    hasNoCap(CAP_CLUTCH_ANALOG, pCaps^.flags) and hasNoCap(CAP_ALT,
+    pCaps^.flags) and hasNoCap(CAP_BATTERY, pCaps^.flags)) then
+    Result := false;
 end;
 
 // --------------------------------------------------------------------------
-
-// class function TSimWheel.GetDevices(const collection
-// : TSimWheelDictionary): integer;
-// var
-// hidGuid: TGUID;
-// devInfo: HDEVINFO;
-// devItfData: TSPDeviceInterfaceData;
-// memberIndex: DWORD;
-// devItfDetailDataBuffer: PSPDeviceInterfaceDetailData;
-// devItfDetailDataSize: DWORD;
-// devHandle: THandle;
-// ppd: PHIDPPreparsedData;
-// devCaps: THIDPCaps;
-// devicePath: string;
-// capabilitiesReport: PCapabilitiesReport;
-// found: boolean;
-// begin
-// Result := 0;
-// if (collection = nil) then
-// Exit;
-//
-// HidD_GetHidGuid(hidGuid);
-// devItfData.cbSize := sizeof(devItfData);
-// devInfo := SetupDiGetClassDevs(@hidGuid, nil, THandle(0), DIGCF_PRESENT or
-// DIGCF_DEVICEINTERFACE);
-// if (devInfo = Pointer(INVALID_HANDLE_VALUE)) then
-// RaiseLastOSError;
-//
-// try
-// memberIndex := 0;
-// while (SetupDiEnumDeviceInterfaces(devInfo, nil, hidGuid, memberIndex,
-// devItfData)) do
-// begin
-// SetupDiGetDeviceInterfaceDetail(devInfo, @devItfData, nil, 0,
-// devItfDetailDataSize, nil);
-// if (GetLastError <> ERROR_INSUFFICIENT_BUFFER) then
-// RaiseLastOSError;
-//
-// devItfDetailDataBuffer := GetMemory(devItfDetailDataSize);
-// try
-// if (sizeof(Pointer) = 8) then
-// PSPDeviceInterfaceDetailData(devItfDetailDataBuffer)^.cbSize := 8
-// else
-// PSPDeviceInterfaceDetailData(devItfDetailDataBuffer)^.cbSize := 5;
-//
-// if (SetupDiGetDeviceInterfaceDetail(devInfo, @devItfData,
-// devItfDetailDataBuffer, devItfDetailDataSize, devItfDetailDataSize,
-// nil)) then
-// begin
-// devicePath := WideCharToString(devItfDetailDataBuffer^.devicePath);
-//
-// if (not collection.ContainsKey(devicePath)) then
-// begin
-// devHandle :=
-// CreateFile(PSPDeviceInterfaceDetailData(devItfDetailDataBuffer)
-// ^.devicePath, GENERIC_READ or GENERIC_WRITE, FILE_SHARE_READ or
-// FILE_SHARE_WRITE, nil, OPEN_EXISTING, 0, 0);
-//
-// found := false;
-// if (devHandle <> INVALID_HANDLE_VALUE) then
-// try
-// if (not HidD_GetPreparsedData(devHandle, ppd)) then
-// RaiseLastOSError;
-//
-// if (HidP_GetCaps(ppd, devCaps) = HIDP_STATUS_SUCCESS) then
-// begin
-// if CheckDevCaps(@devCaps) then
-// begin
-// capabilitiesReport :=
-// GetMemory(devCaps.FeatureReportByteLength);
-// capabilitiesReport^.ReportID := RID_FEATURE_CAPABILITIES;
-// if (HidD_GetFeature(devHandle, capabilitiesReport^,
-// devCaps.FeatureReportByteLength)) then
-// begin
-// found := CheckCapabilitiesReport(capabilitiesReport);
-// if (found) then
-// begin
-// inc(Result);
-// collection.Add(devicePath, TSimWheel.Create(devHandle,
-// devicePath, capabilitiesReport^.majorVersion,
-// capabilitiesReport^.minorVersion,
-// capabilitiesReport^.flags,
-// devCaps.InputReportByteLength,
-// devCaps.OutputReportByteLength,
-// devCaps.FeatureReportByteLength));
-// end;
-// end;
-//
-// FreeMemory(capabilitiesReport);
-// end;
-// end;
-//
-// finally
-// if (not found) then
-// CloseHandle(devHandle);
-// end;
-// end;
-// end;
-//
-// finally
-// FreeMemory(devItfDetailDataBuffer);
-// end;
-//
-// inc(memberIndex);
-// end; // while
-// finally
-// SetupDiDestroyDeviceInfoList(devInfo);
-// end;
-//
-// end;
-
-// class function TSimWheel.GetDevices(): TSimWheelList;
-// var
-// hidGuid: TGUID;
-// devInfo: HDEVINFO;
-// devItfData: TSPDeviceInterfaceData;
-// memberIndex: DWORD;
-// devItfDetailDataBuffer: PSPDeviceInterfaceDetailData;
-// devItfDetailDataSize: DWORD;
-// devHandle: THandle;
-// ppd: PHIDPPreparsedData;
-// devCaps: THIDPCaps;
-// devicePath: string;
-// capabilitiesReport: PCapabilitiesReport;
-// found: boolean;
-// begin
-// Result := TSimWheelList.Create;
-//
-// HidD_GetHidGuid(hidGuid);
-// devItfData.cbSize := sizeof(devItfData);
-// devInfo := SetupDiGetClassDevs(@hidGuid, nil, THandle(0), DIGCF_PRESENT or
-// DIGCF_DEVICEINTERFACE);
-// if (devInfo = Pointer(INVALID_HANDLE_VALUE)) then
-// RaiseLastOSError;
-//
-// try
-// memberIndex := 0;
-// while (SetupDiEnumDeviceInterfaces(devInfo, nil, hidGuid, memberIndex,
-// devItfData)) do
-// begin
-// SetupDiGetDeviceInterfaceDetail(devInfo, @devItfData, nil, 0,
-// devItfDetailDataSize, nil);
-// if (GetLastError <> ERROR_INSUFFICIENT_BUFFER) then
-// RaiseLastOSError;
-//
-// devItfDetailDataBuffer := GetMemory(devItfDetailDataSize);
-// try
-// if (sizeof(Pointer) = 8) then
-// PSPDeviceInterfaceDetailData(devItfDetailDataBuffer)^.cbSize := 8
-// else
-// PSPDeviceInterfaceDetailData(devItfDetailDataBuffer)^.cbSize := 5;
-//
-// if (SetupDiGetDeviceInterfaceDetail(devInfo, @devItfData,
-// devItfDetailDataBuffer, devItfDetailDataSize, devItfDetailDataSize,
-// nil)) then
-// begin
-// devicePath := WideCharToString(devItfDetailDataBuffer^.devicePath);
-//
-// devHandle :=
-// CreateFile(PSPDeviceInterfaceDetailData(devItfDetailDataBuffer)
-// ^.devicePath, GENERIC_READ or GENERIC_WRITE, FILE_SHARE_READ or
-// FILE_SHARE_WRITE, nil, OPEN_EXISTING, 0, 0);
-//
-// found := false;
-// if (devHandle <> INVALID_HANDLE_VALUE) then
-// try
-// if (not HidD_GetPreparsedData(devHandle, ppd)) then
-// RaiseLastOSError;
-//
-// if (HidP_GetCaps(ppd, devCaps) = HIDP_STATUS_SUCCESS) then
-// begin
-// if CheckDevCaps(@devCaps) then
-// begin
-// capabilitiesReport :=
-// GetMemory(devCaps.FeatureReportByteLength);
-// capabilitiesReport^.ReportID := RID_FEATURE_CAPABILITIES;
-// if (HidD_GetFeature(devHandle, capabilitiesReport^,
-// devCaps.FeatureReportByteLength)) then
-// begin
-// found := CheckCapabilitiesReport(capabilitiesReport);
-// if (found) then
-// begin
-// Result.Add(TSimWheel.Create(devHandle, devicePath,
-// capabilitiesReport^.majorVersion,
-// capabilitiesReport^.minorVersion,
-// capabilitiesReport^.flags,
-// devCaps.InputReportByteLength,
-// devCaps.OutputReportByteLength,
-// devCaps.FeatureReportByteLength));
-// end;
-// end;
-//
-// FreeMemory(capabilitiesReport);
-// end;
-// end;
-//
-// finally
-// if (not found) then
-// CloseHandle(devHandle);
-// end;
-//
-// end;
-//
-// finally
-// FreeMemory(devItfDetailDataBuffer);
-// end;
-//
-// inc(memberIndex);
-// end; // while
-// finally
-// SetupDiDestroyDeviceInfoList(devInfo);
-// end;
-//
-// end;
 
 class procedure TSimWheel.GetDevices(onDiscovery: TSimWheelDiscoveryProc);
 var
@@ -474,20 +271,20 @@ end;
 // Constructor / destructor
 // --------------------------------------------------------------------------
 
-constructor TSimWheel.Create(const handle: THandle; const devicePath: string;
-  const majorVersion: UInt16; const minorVersion: UInt16; const flags: UInt16;
-  const inputReportSize, outputReportSize, featureReportSize: integer);
-begin
-  FdevicePath := devicePath;
-  FdataMinorVersion := minorVersion;
-  FdataMajorVersion := majorVersion;
-  Fcapabilities := flags;
-  FInputReportSize := inputReportSize;
-  FOutputReportSize := outputReportSize;
-  FFeatureReportSize := featureReportSize;
-  FHandle := handle;
-  Update;
-end;
+//constructor TSimWheel.Create(const handle: THandle; const devicePath: string;
+//  const majorVersion: UInt16; const minorVersion: UInt16; const flags: UInt16;
+//  const inputReportSize, outputReportSize, featureReportSize: integer);
+//begin
+//  FdevicePath := devicePath;
+//  FdataMinorVersion := minorVersion;
+//  FdataMajorVersion := majorVersion;
+//  Fcapabilities := flags;
+//  FInputReportSize := inputReportSize;
+//  FOutputReportSize := outputReportSize;
+//  FFeatureReportSize := featureReportSize;
+//  FHandle := handle;
+//  Update;
+//end;
 
 // --------------------------------------------------------------------------
 
