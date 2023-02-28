@@ -4,6 +4,8 @@ A companion app for [ESP32 based open source wireless steering wheel](https://gi
 
 ![Screenshot](./resources/Screenshot.png)
 
+[Usage notes](./doc/UsageNotes_en.md)
+
 ## Features
 
 - Load/save settings.
@@ -18,13 +20,17 @@ A companion app for [ESP32 based open source wireless steering wheel](https://gi
 
 ### 1.0.0
 
-- First release with basic functionality. 
-
+- First release with basic functionality.
 - Windows only. Delphi implementation.
+
+### 1.1.0
+
+- Ignore devices with no available configuration options.
+- Added some usage notes.
 
 ## Future improvements
 
-**NOT GUARANTEED**
+Note: **NOT GUARANTEED**
 
 - *Electron.js* implementation for portability.
 
