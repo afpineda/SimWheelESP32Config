@@ -63,10 +63,10 @@ type
     class procedure GetDevices(onDiscovery: TSimWheelDiscoveryProc);
 
   private
-//    constructor Create(const handle: THandle; const devicePath: string;
-//      const majorVersion: UInt16; const minorVersion: UInt16;
-//      const flags: UInt16; const inputReportSize, outputReportSize,
-//      featureReportSize: integer); overload;
+    // constructor Create(const handle: THandle; const devicePath: string;
+    // const majorVersion: UInt16; const minorVersion: UInt16;
+    // const flags: UInt16; const inputReportSize, outputReportSize,
+    // featureReportSize: integer); overload;
 
   public
     constructor Create(const devicePath: string); overload;
@@ -168,7 +168,8 @@ begin
   // DATA_MINOR_VERSION);
   if (Result and hasNoCap(CAP_CLUTCH_BUTTON, pCaps^.flags) and
     hasNoCap(CAP_CLUTCH_ANALOG, pCaps^.flags) and hasNoCap(CAP_ALT,
-    pCaps^.flags) and hasNoCap(CAP_BATTERY, pCaps^.flags)) then
+    pCaps^.flags) and (hasNoCap(CAP_BATTERY, pCaps^.flags) or
+    not hasNoCap(CAP_BATTERY_CALIBRATION_AVAILABLE, pCaps^.flags))) then
     Result := false;
 end;
 
@@ -271,20 +272,20 @@ end;
 // Constructor / destructor
 // --------------------------------------------------------------------------
 
-//constructor TSimWheel.Create(const handle: THandle; const devicePath: string;
-//  const majorVersion: UInt16; const minorVersion: UInt16; const flags: UInt16;
-//  const inputReportSize, outputReportSize, featureReportSize: integer);
-//begin
-//  FdevicePath := devicePath;
-//  FdataMinorVersion := minorVersion;
-//  FdataMajorVersion := majorVersion;
-//  Fcapabilities := flags;
-//  FInputReportSize := inputReportSize;
-//  FOutputReportSize := outputReportSize;
-//  FFeatureReportSize := featureReportSize;
-//  FHandle := handle;
-//  Update;
-//end;
+// constructor TSimWheel.Create(const handle: THandle; const devicePath: string;
+// const majorVersion: UInt16; const minorVersion: UInt16; const flags: UInt16;
+// const inputReportSize, outputReportSize, featureReportSize: integer);
+// begin
+// FdevicePath := devicePath;
+// FdataMinorVersion := minorVersion;
+// FdataMajorVersion := majorVersion;
+// Fcapabilities := flags;
+// FInputReportSize := inputReportSize;
+// FOutputReportSize := outputReportSize;
+// FFeatureReportSize := featureReportSize;
+// FHandle := handle;
+// Update;
+// end;
 
 // --------------------------------------------------------------------------
 
