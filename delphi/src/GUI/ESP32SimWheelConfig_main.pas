@@ -45,6 +45,8 @@ type
     Dlg_FileSave: TFileSaveDialog;
     Page_DPad: TTabSheet;
     RG_DPadMode: TRadioGroup;
+    Page_ButtonsMap: TTabSheet;
+    LV_ButtonsMap: TListView;
     procedure FormCreate(Sender: TObject);
     procedure PC_mainChange(Sender: TObject);
     procedure RG_AltButtonsModeClick(Sender: TObject);

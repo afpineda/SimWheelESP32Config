@@ -4,9 +4,11 @@ object Form_main: TForm_main
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'ESP32 Simwheel config'
-  ClientHeight = 344
-  ClientWidth = 513
+  ClientHeight = 303
+  ClientWidth = 462
   Color = clBtnFace
+  Constraints.MinHeight = 350
+  Constraints.MinWidth = 480
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -18,18 +20,20 @@ object Form_main: TForm_main
   object PC_main: TPageControl
     Left = 0
     Top = 0
-    Width = 513
-    Height = 344
-    ActivePage = Page_Presets
+    Width = 462
+    Height = 303
+    ActivePage = Page_ButtonsMap
     Align = alClient
     TabOrder = 0
     OnChange = PC_mainChange
+    ExplicitWidth = 513
+    ExplicitHeight = 344
     object Page_Devices: TTabSheet
       Caption = 'Devices'
       object Lbl_DeviceReady: TLabel
         Left = 0
         Top = 0
-        Width = 505
+        Width = 454
         Height = 41
         Align = alTop
         Alignment = taCenter
@@ -48,7 +52,7 @@ object Form_main: TForm_main
       object Lbl_DeviceNotReady: TLabel
         Left = 0
         Top = 41
-        Width = 505
+        Width = 454
         Height = 41
         Align = alTop
         Alignment = taCenter
@@ -66,18 +70,20 @@ object Form_main: TForm_main
       end
       object Btn_Scan: TButton
         Left = 0
-        Top = 274
-        Width = 505
+        Top = 233
+        Width = 454
         Height = 42
         Align = alBottom
         Caption = 'Scan'
         TabOrder = 0
         OnClick = Btn_ScanClick
+        ExplicitTop = 274
+        ExplicitWidth = 505
       end
       object Lbl_TooManyDevices: TStaticText
         Left = 0
         Top = 82
-        Width = 505
+        Width = 454
         Height = 71
         Align = alTop
         Alignment = taCenter
@@ -92,6 +98,7 @@ object Form_main: TForm_main
         Font.Style = []
         ParentFont = False
         TabOrder = 1
+        ExplicitWidth = 505
       end
     end
     object Page_Clutch: TTabSheet
@@ -100,7 +107,7 @@ object Form_main: TForm_main
       object RG_ClutchMode: TRadioGroup
         Left = 0
         Top = 0
-        Width = 505
+        Width = 454
         Height = 123
         Align = alTop
         Caption = 'Working mode'
@@ -116,8 +123,8 @@ object Form_main: TForm_main
       object Panel_BitePoint: TPanel
         Left = 0
         Top = 123
-        Width = 505
-        Height = 193
+        Width = 454
+        Height = 152
         Align = alClient
         BevelOuter = bvNone
         Caption = 'Panel1'
@@ -129,7 +136,7 @@ object Form_main: TForm_main
         object Lbl_BitePoint: TLabel
           Left = 0
           Top = 0
-          Width = 505
+          Width = 454
           Height = 24
           Align = alTop
           Alignment = taCenter
@@ -142,7 +149,7 @@ object Form_main: TForm_main
         object TB_BitePoint: TTrackBar
           Left = 0
           Top = 24
-          Width = 505
+          Width = 454
           Height = 49
           Align = alTop
           Max = 254
@@ -166,8 +173,8 @@ object Form_main: TForm_main
         end
         object Btn_ClutchAutocal: TButton
           Left = 0
-          Top = 151
-          Width = 505
+          Top = 110
+          Width = 454
           Height = 42
           Align = alBottom
           Caption = 'Autocalibrate analog clutch paddles'
@@ -184,7 +191,7 @@ object Form_main: TForm_main
       object RG_AltButtonsMode: TRadioGroup
         Left = 0
         Top = 0
-        Width = 505
+        Width = 454
         Height = 81
         Align = alTop
         Caption = 'Working mode'
@@ -193,6 +200,7 @@ object Form_main: TForm_main
           'Regular buttons')
         TabOrder = 0
         OnClick = RG_AltButtonsModeClick
+        ExplicitWidth = 505
       end
     end
     object Page_DPad: TTabSheet
@@ -201,7 +209,7 @@ object Form_main: TForm_main
       object RG_DPadMode: TRadioGroup
         Left = 0
         Top = 0
-        Width = 505
+        Width = 454
         Height = 81
         Align = alTop
         Caption = 'Working mode'
@@ -211,6 +219,7 @@ object Form_main: TForm_main
         TabOrder = 0
         OnClick = RG_DPadModeClick
         ExplicitTop = 8
+        ExplicitWidth = 505
       end
     end
     object Page_battery: TTabSheet
@@ -219,7 +228,7 @@ object Form_main: TForm_main
       object Lbl_SocHeader: TLabel
         Left = 0
         Top = 0
-        Width = 505
+        Width = 454
         Height = 13
         Align = alTop
         Alignment = taCenter
@@ -231,7 +240,7 @@ object Form_main: TForm_main
       object Lbl_SOC: TLabel
         Left = 0
         Top = 13
-        Width = 505
+        Width = 454
         Height = 60
         Align = alTop
         Alignment = taCenter
@@ -249,13 +258,15 @@ object Form_main: TForm_main
       end
       object Btn_AutocalBattery: TButton
         Left = 0
-        Top = 274
-        Width = 505
+        Top = 233
+        Width = 454
         Height = 42
         Align = alBottom
         Caption = 'Autocalibrate battery'
         TabOrder = 0
         OnClick = Btn_AutocalBatteryClick
+        ExplicitTop = 274
+        ExplicitWidth = 505
       end
     end
     object Page_Presets: TTabSheet
@@ -264,23 +275,63 @@ object Form_main: TForm_main
       object Btn_LoadFromFile: TButton
         Left = 0
         Top = 33
-        Width = 505
+        Width = 454
         Height = 33
         Align = alTop
         Caption = 'Load from file'
         TabOrder = 0
         OnClick = Btn_LoadFromFileClick
+        ExplicitWidth = 505
       end
       object Btn_SaveToFile: TButton
         Left = 0
         Top = 0
-        Width = 505
+        Width = 454
         Height = 33
         Align = alTop
         Caption = 'Save to file'
         TabOrder = 1
         OnClick = Btn_SaveToFileClick
         ExplicitTop = -6
+        ExplicitWidth = 505
+      end
+    end
+    object Page_ButtonsMap: TTabSheet
+      Caption = 'Buttons map'
+      ImageIndex = 6
+      DesignSize = (
+        454
+        275)
+      object LV_ButtonsMap: TListView
+        Left = 16
+        Top = 40
+        Width = 422
+        Height = 221
+        Anchors = [akLeft, akTop, akRight, akBottom]
+        Columns = <
+          item
+            Caption = 'Firmware Button'
+            MinWidth = 100
+            Width = 100
+          end
+          item
+            Caption = 'HID button'
+            MinWidth = 100
+            Width = 100
+          end
+          item
+            Caption = 'HID button (alt mode)'
+            MinWidth = 100
+            Width = 120
+          end>
+        ColumnClick = False
+        Items.ItemData = {
+          05340000000100000000000000FFFFFFFFFFFFFFFF02000000FFFFFFFF000000
+          000474006500730074000131008020B82B013200A003B82BFFFFFFFF}
+        TabOrder = 0
+        ViewStyle = vsReport
+        ExplicitWidth = 473
+        ExplicitHeight = 262
       end
     end
   end

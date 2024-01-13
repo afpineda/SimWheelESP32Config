@@ -17,8 +17,6 @@ uses
 {$Z1}
 
 type
-  // TSimWheel = class;
-  // TSimWheelList = TList<TSimWheel>;
   TSimWheelDiscoveryProc = TProc<string, Uint64>;
 
   TSimWheel = class
@@ -36,20 +34,27 @@ type
       DPadMode: UInt8;
     end;
 
+    PConfigReport = ^TConfigReport;
+
+    TFirmwareButton = 0 .. 63;
+    TUserButton = 0 .. 127;
+    TButtonsMapCallback = TProc<TFirmwareButton, TUserButton, TUserButton>;
+
+  private type
+
     TButtonsMapReport = packed record
+      ReportID: UInt8;
       RawButton: UInt8;
-      UserButton: UInt8;
-      UserButtonAlt: UInt8;
+      userButton: UInt8;
+      userButtonAlt: UInt8;
     end;
 
-    PConfigReport = ^TConfigReport;
-    PButtonMapReport = TButtonsMapReport;
+    PButtonsMapReport = ^TButtonsMapReport;
 
   protected
     FdevicePath: string;
     Fcapabilities: UInt16;
     FConfig: TConfigReport;
-    FMap: TButtonsMapReport;
     FdataMajorVersion: UInt16;
     FdataMinorVersion: UInt16;
     FInputReportSize: integer;
@@ -69,6 +74,8 @@ type
   protected
     procedure ClearConfigReport(const pReport: PConfigReport);
     procedure SendConfigReport(const pReport: PConfigReport);
+    procedure SendButtonsMapReport(const pReport: PButtonsMapReport);
+    procedure ReceiveButtonsMapReport(var report: TButtonsMapReport);
 
   public
 
@@ -84,24 +91,65 @@ type
     constructor Create(const devicePath: string); overload;
     destructor Destroy; override;
 
+    // Force auto-calibration of analog axes
     procedure ForceAnalogAxesCalibration;
+
+    // Force battery auto-calibration
     procedure ForceBatteryAutocalibration;
+
+    // Retrieve user-defined buttons map
+    // Returns false if another app is in the way
+    function GetButtonsMap(callback: TButtonsMapCallback): boolean;
+
+    // Check if this device has certain capability
     function HasCapability(aCap: TSimWheel.TCapabilities): boolean;
+
+    // Reload user settings from device
+    // Returns true if something has changed
     function Update: boolean;
+
+    // Reset buttons map to "factory defaults"
     procedure ResetButtonsMap;
+
+    // Save current user settings to device's flash memory
     procedure SaveNow;
+
+    // Upload settings all at once
     procedure SetConfig(const [Ref] aConfig: TConfigReport);
 
+    // Set map for single button
+    procedure SetButtonMap(firmwareButton: TFirmwareButton;
+      userButton, userButtonAlt: TUserButton);
+
+    // Working mode of ALT buttons
     property AltMode: boolean read GetAltMode write SetAltMode;
+
+    // Current clutch's bite point
     property BitePoint: UInt8 read FConfig.BitePoint write SetBitePoint;
+
+    // Device capabilities bitmap
     property Capabilities: UInt16 read Fcapabilities;
+
+    // Working mode of clutch paddles
     property ClutchMode: TSimWheel.TClutchMode read GetClutchMode
       write SetClutchMode;
+
+    // Major version of data protocol
     property DataMajorVersion: UInt16 read FdataMajorVersion;
+
+    // Minor version of data protocol
     property DataMinorVersion: UInt16 read FdataMinorVersion;
+
+    // Device identifier
     property DeviceID: Uint64 read FDeviceID;
+
+    // System path to device
     property devicePath: string read FdevicePath;
+
+    // Working mode of DPAD inputs
     property DPadMode: boolean read GetDPADMode write SetDPADMode;
+
+    // Last known battery level (if any)
     property LastBatteryLevel: UInt8 read FConfig.SimpleCommand;
 
   end;
@@ -394,6 +442,24 @@ end;
 
 // --------------------------------------------------------------------------
 
+procedure TSimWheel.SendButtonsMapReport(const pReport: PButtonsMapReport);
+begin
+  pReport^.ReportID := RID_FEATURE_BUTTONS_MAP;
+  if (not HidD_SetFeature(FHandle, pReport^, sizeof(TButtonsMapReport))) then
+    RaiseLastOSError;
+end;
+
+// --------------------------------------------------------------------------
+
+procedure TSimWheel.ReceiveButtonsMapReport(var report: TButtonsMapReport);
+begin
+  report.ReportID := RID_FEATURE_BUTTONS_MAP;
+  if (not HidD_GetFeature(FHandle, report, sizeof(TButtonsMapReport))) then
+    RaiseLastOSError;
+end;
+
+// --------------------------------------------------------------------------
+
 function TSimWheel.GetAltMode: boolean;
 begin
   Result := (FConfig.AltMode <> 0);
@@ -542,6 +608,47 @@ procedure TSimWheel.SetConfig(const [Ref] aConfig: TSimWheel.TConfigReport);
 begin
   SendConfigReport(@aConfig);
   Update;
+end;
+
+// --------------------------------------------------------------------------
+
+procedure TSimWheel.SetButtonMap(firmwareButton: TFirmwareButton;
+  userButton, userButtonAlt: TUserButton);
+var
+  report4: TButtonsMapReport;
+begin
+  report4.RawButton := firmwareButton;
+  report4.userButton := userButton;
+  report4.userButtonAlt := userButtonAlt;
+end;
+
+
+// --------------------------------------------------------------------------
+
+function TSimWheel.GetButtonsMap(callback: TButtonsMapCallback): boolean;
+var
+  index: TFirmwareButton;
+  report4: TButtonsMapReport;
+begin
+  Result := false;
+  if (not Assigned(callback)) then
+    Exit;
+
+  index := Low(TFirmwareButton);
+  while ((not Result) and (index <= High(TFirmwareButton))) do
+  begin
+    report4.RawButton := index;
+    report4.userButton := $FF;
+    report4.userButtonAlt := $FF;
+    SendButtonsMapReport(@report4);
+    ReceiveButtonsMapReport(report4);
+    Result := (report4.RawButton = index);
+    if (Result) then
+      callback(TFirmwareButton(report4.RawButton),
+        TUserButton(report4.userButton), TUserButton(report4.userButtonAlt));
+    inc(index);
+  end;
+
 end;
 
 end.
