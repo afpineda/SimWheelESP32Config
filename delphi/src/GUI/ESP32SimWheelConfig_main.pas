@@ -1,11 +1,11 @@
-{****************************************************************************
- * @author Ángel Fernández Pineda. Madrid. Spain.
- * @date 2023-01-17
- * @brief Configuration app for ESP32-based open source sim wheels
- *
- * @copyright Creative Commons Attribution 4.0 International (CC BY 4.0)
- *
-****************************************************************************}
+{ ****************************************************************************
+  * @author Ángel Fernández Pineda. Madrid. Spain.
+  * @date 2023-01-17
+  * @brief Configuration app for ESP32-based open source sim wheels
+  *
+  * @copyright Creative Commons Attribution 4.0 International (CC BY 4.0)
+  *
+  **************************************************************************** }
 
 unit ESP32SimWheelConfig_main;
 
@@ -43,6 +43,8 @@ type
     Btn_SaveToFile: TButton;
     Dlg_FileOpen: TFileOpenDialog;
     Dlg_FileSave: TFileSaveDialog;
+    Page_DPad: TTabSheet;
+    RG_DPadMode: TRadioGroup;
     procedure FormCreate(Sender: TObject);
     procedure PC_mainChange(Sender: TObject);
     procedure RG_AltButtonsModeClick(Sender: TObject);
@@ -53,6 +55,7 @@ type
     procedure Btn_ScanClick(Sender: TObject);
     procedure Btn_SaveToFileClick(Sender: TObject);
     procedure Btn_LoadFromFileClick(Sender: TObject);
+    procedure RG_DPadModeClick(Sender: TObject);
   private
     { Private declarations }
     SimWheel: TSimWheel;
@@ -81,6 +84,7 @@ begin
   Page_battery.TabVisible := false;
   Page_AltButtons.TabVisible := false;
   Page_Presets.TabVisible := false;
+  Page_DPad.TabVisible := false;
   Lbl_DeviceReady.Visible := false;
   Lbl_DeviceNotReady.Visible := true;
   Lbl_TooManyDevices.Visible := false;
@@ -96,8 +100,9 @@ begin
       SimWheel.HasCapability(CAP_CLUTCH_ANALOG);
     Page_AltButtons.TabVisible := SimWheel.HasCapability(CAP_ALT);
     Page_battery.TabVisible := SimWheel.HasCapability(CAP_BATTERY);
+    Page_DPad.TabVisible := SimWheel.HasCapability(CAP_DPAD);
     Page_Presets.TabVisible := Page_Clutch.TabVisible or
-      Page_AltButtons.TabVisible;
+      Page_AltButtons.TabVisible or Page_DPad.TabVisible;
     Btn_AutocalBattery.Visible := not SimWheel.HasCapability
       (CAP_BATTERY_CALIBRATION_AVAILABLE);
     Btn_ClutchAutocal.Visible := SimWheel.HasCapability(CAP_CLUTCH_ANALOG);
@@ -106,6 +111,8 @@ begin
       PC_main.ActivePageIndex := Page_Clutch.PageIndex
     else if (Page_AltButtons.TabVisible) then
       PC_main.ActivePageIndex := Page_AltButtons.PageIndex
+    else if (Page_DPad.TabVisible) then
+      PC_main.ActivePageIndex := Page_DPad.PageIndex
     else if (Page_battery.TabVisible) then
       PC_main.ActivePageIndex := Page_battery.PageIndex;
   end
@@ -126,6 +133,10 @@ begin
         RG_AltButtonsMode.ItemIndex := 0
       else
         RG_AltButtonsMode.ItemIndex := 1;
+      if (SimWheel.DPadMode) then
+        RG_DPadMode.ItemIndex := 0
+      else
+        RG_DPadMode.ItemIndex := 1;
       Lbl_SOC.Caption := Format('%d%%', [SimWheel.LastBatteryLevel]);
     except
       OnDeviceError;
@@ -143,7 +154,7 @@ begin
   count := 0;
   try
     TSimWheel.GetDevices(
-      procedure(devicePath: string)
+      procedure(devicePath: string; ID: UInt64)
       begin
         inc(count);
         lastPath := devicePath;
@@ -163,9 +174,9 @@ end;
 
 procedure TForm_main.OnDeviceError;
 begin
-//  Application.MessageBox('Device no longer present', 'Error',
-//    MB_ICONSTOP or MB_OK);
-//  FreeAndNil(SimWheel);
+  // Application.MessageBox('Device no longer present', 'Error',
+  // MB_ICONSTOP or MB_OK);
+  // FreeAndNil(SimWheel);
   OnDeviceNotConnected;
 end;
 
@@ -199,6 +210,22 @@ begin
   if (SimWheel <> nil) then
     try
       SimWheel.AltMode := (RG_AltButtonsMode.ItemIndex = 0);
+    except
+      OnDeviceError;
+    end
+  else
+    OnDeviceNotConnected;
+end;
+
+// ---------------------------------------------------------------------------
+// Page: DPAD
+// ---------------------------------------------------------------------------
+
+procedure TForm_main.RG_DPadModeClick(Sender: TObject);
+begin
+  if (SimWheel <> nil) then
+    try
+      SimWheel.DPadMode := (RG_DPadMode.ItemIndex = 0);
     except
       OnDeviceError;
     end
@@ -300,6 +327,8 @@ begin
         strm.Write(SimWheel.BitePoint, sizeof(SimWheel.BitePoint));
         auxBool := SimWheel.AltMode;
         strm.Write(auxBool, sizeof(auxBool));
+        auxBool := SimWheel.DPadMode;
+        strm.Write(auxBool, sizeof(auxBool));
       finally
         strm.Free;
       end;
@@ -327,13 +356,13 @@ begin
         strm.Read(cfg.ClutchMode, sizeof(cfg.ClutchMode));
         strm.Read(cfg.BitePoint, sizeof(cfg.BitePoint));
         strm.Read(cfg.AltMode, sizeof(cfg.AltMode));
+        strm.Read(cfg.DPadMode, sizeof(cfg.DPADMode));
         cfg.SimpleCommand := $FF;
         SimWheel.SetConfig(cfg);
       finally
         strm.Free;
       end;
     except
-      ;
       Application.MessageBox('Unable to load file', 'Error',
         MB_OK or MB_ICONSTOP);
     end;
