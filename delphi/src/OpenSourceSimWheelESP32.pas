@@ -18,6 +18,9 @@ uses
 
 type
   TSimWheelDiscoveryProc = TProc<string, Uint64>;
+  TFirmwareButton = 0 .. 63;
+  TUserButton = 0 .. 127;
+  TButtonsMapCallback = TProc<TFirmwareButton, TUserButton, TUserButton>;
 
   TSimWheel = class
   public type
@@ -35,10 +38,6 @@ type
     end;
 
     PConfigReport = ^TConfigReport;
-
-    TFirmwareButton = 0 .. 63;
-    TUserButton = 0 .. 127;
-    TButtonsMapCallback = TProc<TFirmwareButton, TUserButton, TUserButton>;
 
   private type
 
@@ -620,6 +619,7 @@ begin
   report4.RawButton := firmwareButton;
   report4.userButton := userButton;
   report4.userButtonAlt := userButtonAlt;
+  SendButtonsMapReport(@report4);
 end;
 
 
@@ -630,12 +630,12 @@ var
   index: TFirmwareButton;
   report4: TButtonsMapReport;
 begin
-  Result := false;
+  Result := true;
   if (not Assigned(callback)) then
     Exit;
 
   index := Low(TFirmwareButton);
-  while ((not Result) and (index <= High(TFirmwareButton))) do
+  while (Result and (index <= High(TFirmwareButton))) do
   begin
     report4.RawButton := index;
     report4.userButton := $FF;
@@ -643,12 +643,14 @@ begin
     SendButtonsMapReport(@report4);
     ReceiveButtonsMapReport(report4);
     Result := (report4.RawButton = index);
-    if (Result) then
+    if (Result and (report4.userButton <= high(TUserButton)) and
+      (report4.userButtonAlt <= high(TUserButton))) then
+    begin
       callback(TFirmwareButton(report4.RawButton),
         TUserButton(report4.userButton), TUserButton(report4.userButtonAlt));
+    end;
     inc(index);
   end;
-
 end;
 
 end.

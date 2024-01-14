@@ -26,8 +26,6 @@ object Form_main: TForm_main
     Align = alClient
     TabOrder = 0
     OnChange = PC_mainChange
-    ExplicitWidth = 513
-    ExplicitHeight = 344
     object Page_Devices: TTabSheet
       Caption = 'Devices'
       object Lbl_DeviceReady: TLabel
@@ -77,8 +75,6 @@ object Form_main: TForm_main
         Caption = 'Scan'
         TabOrder = 0
         OnClick = Btn_ScanClick
-        ExplicitTop = 274
-        ExplicitWidth = 505
       end
       object Lbl_TooManyDevices: TStaticText
         Left = 0
@@ -98,7 +94,6 @@ object Form_main: TForm_main
         Font.Style = []
         ParentFont = False
         TabOrder = 1
-        ExplicitWidth = 505
       end
     end
     object Page_Clutch: TTabSheet
@@ -118,7 +113,6 @@ object Form_main: TForm_main
           'Regular buttons')
         TabOrder = 0
         OnClick = RG_ClutchModeClick
-        ExplicitWidth = 326
       end
       object Panel_BitePoint: TPanel
         Left = 0
@@ -131,8 +125,6 @@ object Form_main: TForm_main
         Constraints.MinHeight = 81
         ShowCaption = False
         TabOrder = 1
-        ExplicitWidth = 326
-        ExplicitHeight = 120
         object Lbl_BitePoint: TLabel
           Left = 0
           Top = 0
@@ -161,7 +153,6 @@ object Form_main: TForm_main
           TabOrder = 0
           TickMarks = tmBoth
           OnChange = TB_BitePointChange
-          ExplicitWidth = 326
         end
         object ButtonGroup1: TButtonGroup
           Left = 496
@@ -180,8 +171,6 @@ object Form_main: TForm_main
           Caption = 'Autocalibrate analog clutch paddles'
           TabOrder = 2
           OnClick = Btn_ClutchAutocalClick
-          ExplicitTop = 78
-          ExplicitWidth = 326
         end
       end
     end
@@ -200,7 +189,6 @@ object Form_main: TForm_main
           'Regular buttons')
         TabOrder = 0
         OnClick = RG_AltButtonsModeClick
-        ExplicitWidth = 505
       end
     end
     object Page_DPad: TTabSheet
@@ -218,8 +206,6 @@ object Form_main: TForm_main
           'Regular buttons')
         TabOrder = 0
         OnClick = RG_DPadModeClick
-        ExplicitTop = 8
-        ExplicitWidth = 505
       end
     end
     object Page_battery: TTabSheet
@@ -265,8 +251,6 @@ object Form_main: TForm_main
         Caption = 'Autocalibrate battery'
         TabOrder = 0
         OnClick = Btn_AutocalBatteryClick
-        ExplicitTop = 274
-        ExplicitWidth = 505
       end
     end
     object Page_Presets: TTabSheet
@@ -281,7 +265,6 @@ object Form_main: TForm_main
         Caption = 'Load from file'
         TabOrder = 0
         OnClick = Btn_LoadFromFileClick
-        ExplicitWidth = 505
       end
       object Btn_SaveToFile: TButton
         Left = 0
@@ -292,8 +275,6 @@ object Form_main: TForm_main
         Caption = 'Save to file'
         TabOrder = 1
         OnClick = Btn_SaveToFileClick
-        ExplicitTop = -6
-        ExplicitWidth = 505
       end
     end
     object Page_ButtonsMap: TTabSheet
@@ -304,9 +285,9 @@ object Form_main: TForm_main
         275)
       object LV_ButtonsMap: TListView
         Left = 16
-        Top = 40
-        Width = 422
-        Height = 221
+        Top = 47
+        Width = 345
+        Height = 214
         Anchors = [akLeft, akTop, akRight, akBottom]
         Columns = <
           item
@@ -328,10 +309,141 @@ object Form_main: TForm_main
         Items.ItemData = {
           05340000000100000000000000FFFFFFFFFFFFFFFF02000000FFFFFFFF000000
           000474006500730074000131008020B82B013200A003B82BFFFFFFFF}
+        ReadOnly = True
+        RowSelect = True
         TabOrder = 0
         ViewStyle = vsReport
-        ExplicitWidth = 473
-        ExplicitHeight = 262
+        OnSelectItem = LV_ButtonsMapSelectItem
+      end
+      object Btn_MapRefresh: TButton
+        Left = 367
+        Top = 47
+        Width = 75
+        Height = 25
+        Anchors = [akTop, akRight]
+        Caption = 'Refresh'
+        TabOrder = 1
+        OnClick = OnRefreshButtonsMap
+      end
+      object Btn_SaveMap: TButton
+        Left = 367
+        Top = 78
+        Width = 75
+        Height = 25
+        Anchors = [akTop, akRight]
+        Caption = 'Save'
+        TabOrder = 2
+        OnClick = Btn_SaveMapClick
+      end
+      object Panel_EditMap: TPanel
+        Left = 0
+        Top = 0
+        Width = 454
+        Height = 41
+        Align = alTop
+        BevelEdges = []
+        BevelOuter = bvNone
+        Caption = 'Panel1'
+        ShowCaption = False
+        TabOrder = 3
+        ExplicitLeft = -3
+        DesignSize = (
+          454
+          41)
+        object Lbl_MapNoAlt: TLabel
+          Left = 142
+          Top = 10
+          Width = 25
+          Height = 16
+          Caption = 'HID:'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+        end
+        object Lbl_MapAlt: TLabel
+          Left = 248
+          Top = 10
+          Width = 61
+          Height = 16
+          Caption = 'HID (ALT):'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+        end
+        object Lbl_MapFirmware: TLabel
+          Left = 22
+          Top = 12
+          Width = 60
+          Height = 16
+          Caption = 'Firmware:'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+        end
+        object Lbl_MapSelected: TLabel
+          Left = 88
+          Top = 8
+          Width = 18
+          Height = 21
+          Caption = '00'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+        end
+        object Edit_MapNoAlt: TSpinEdit
+          Left = 170
+          Top = 8
+          Width = 47
+          Height = 22
+          AutoSize = False
+          MaxValue = 127
+          MinValue = 0
+          TabOrder = 0
+          Value = 100
+        end
+        object Edit_MapAlt: TSpinEdit
+          Left = 312
+          Top = 8
+          Width = 49
+          Height = 22
+          AutoSize = False
+          MaxValue = 127
+          MinValue = 0
+          TabOrder = 1
+          Value = 100
+        end
+        object Btn_MapApply: TButton
+          Left = 367
+          Top = 8
+          Width = 75
+          Height = 25
+          Anchors = [akTop, akRight]
+          Caption = 'Apply'
+          TabOrder = 2
+          OnClick = Btn_MapApplyClick
+        end
+      end
+      object Btn_MapDefaults: TButton
+        Left = 367
+        Top = 238
+        Width = 75
+        Height = 25
+        Anchors = [akLeft, akRight, akBottom]
+        Caption = 'Defaults'
+        TabOrder = 4
+        OnClick = Btn_MapDefaultsClick
       end
     end
   end
@@ -345,8 +457,8 @@ object Form_main: TForm_main
       end>
     Options = [fdoStrictFileTypes, fdoPathMustExist, fdoFileMustExist, fdoNoTestFileCreate, fdoDontAddToRecent]
     Title = 'Load from file'
-    Left = 199
-    Top = 220
+    Left = 65529
+    Top = 179
   end
   object Dlg_FileSave: TFileSaveDialog
     DefaultExtension = '*.swh'
@@ -358,7 +470,7 @@ object Form_main: TForm_main
       end>
     Options = [fdoOverWritePrompt, fdoStrictFileTypes, fdoPathMustExist, fdoCreatePrompt, fdoNoReadOnlyReturn, fdoDontAddToRecent]
     Title = 'Save to file'
-    Left = 267
-    Top = 220
+    Left = 65534
+    Top = 131
   end
 end
