@@ -12,8 +12,10 @@ A companion app for [ESP32 based open source wireless steering wheel](https://gi
 - Select working mode of clutch paddles.
 - Select working mode of "ALT" buttons.
 - Set clutch bite point.
+- Set DPAD working mode.
 - Force auto-calibration of analog clutch paddles.
 - Force battery auto-calibration. Not available if the battery was previously calibrated.
+- Map hardware buttons to user-defined HID buttons.
 - Windows 64 bits only.
 
 ## Change log
@@ -27,6 +29,12 @@ A companion app for [ESP32 based open source wireless steering wheel](https://gi
 
 - Ignore devices with no available configuration options.
 - Added some usage notes.
+
+### 1.2.0
+
+- Updated to data version 1.1
+- Select DPAD working mode
+- User-defined buttons map
 
 ## Future improvements
 

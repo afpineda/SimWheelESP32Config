@@ -1,11 +1,11 @@
-{****************************************************************************
- * @author Ángel Fernández Pineda. Madrid. Spain.
- * @date 2023-01-17
- * @brief Configuration app for ESP32-based open source sim wheels
- *
- * @copyright Creative Commons Attribution 4.0 International (CC BY 4.0)
- *
-****************************************************************************}
+{ ****************************************************************************
+  * @author Ángel Fernández Pineda. Madrid. Spain.
+  * @date 2023-01-17
+  * @brief Configuration app for ESP32-based open source sim wheels
+  *
+  * @copyright Creative Commons Attribution 4.0 International (CC BY 4.0)
+  *
+  **************************************************************************** }
 
 unit ESP32SimWheelConfig_main;
 
@@ -15,7 +15,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, OpenSourceSimWheelESP32,
-  Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ButtonGroup;
+  Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ButtonGroup, Vcl.Samples.Spin;
 
 type
   TForm_main = class(TForm)
@@ -43,6 +43,21 @@ type
     Btn_SaveToFile: TButton;
     Dlg_FileOpen: TFileOpenDialog;
     Dlg_FileSave: TFileSaveDialog;
+    Page_DPad: TTabSheet;
+    RG_DPadMode: TRadioGroup;
+    Page_ButtonsMap: TTabSheet;
+    LV_ButtonsMap: TListView;
+    Btn_MapRefresh: TButton;
+    Btn_SaveMap: TButton;
+    Panel_EditMap: TPanel;
+    Edit_MapNoAlt: TSpinEdit;
+    Edit_MapAlt: TSpinEdit;
+    Lbl_MapNoAlt: TLabel;
+    Lbl_MapAlt: TLabel;
+    Btn_MapApply: TButton;
+    Lbl_MapFirmware: TLabel;
+    Lbl_MapSelected: TLabel;
+    Btn_MapDefaults: TButton;
     procedure FormCreate(Sender: TObject);
     procedure PC_mainChange(Sender: TObject);
     procedure RG_AltButtonsModeClick(Sender: TObject);
@@ -53,6 +68,13 @@ type
     procedure Btn_ScanClick(Sender: TObject);
     procedure Btn_SaveToFileClick(Sender: TObject);
     procedure Btn_LoadFromFileClick(Sender: TObject);
+    procedure RG_DPadModeClick(Sender: TObject);
+    procedure OnRefreshButtonsMap(Sender: TObject);
+    procedure LV_ButtonsMapSelectItem(Sender: TObject; Item: TListItem;
+      Selected: Boolean);
+    procedure Btn_MapApplyClick(Sender: TObject);
+    procedure Btn_SaveMapClick(Sender: TObject);
+    procedure Btn_MapDefaultsClick(Sender: TObject);
   private
     { Private declarations }
     SimWheel: TSimWheel;
@@ -81,6 +103,8 @@ begin
   Page_battery.TabVisible := false;
   Page_AltButtons.TabVisible := false;
   Page_Presets.TabVisible := false;
+  Page_DPad.TabVisible := false;
+  Page_ButtonsMap.TabVisible := false;
   Lbl_DeviceReady.Visible := false;
   Lbl_DeviceNotReady.Visible := true;
   Lbl_TooManyDevices.Visible := false;
@@ -96,8 +120,12 @@ begin
       SimWheel.HasCapability(CAP_CLUTCH_ANALOG);
     Page_AltButtons.TabVisible := SimWheel.HasCapability(CAP_ALT);
     Page_battery.TabVisible := SimWheel.HasCapability(CAP_BATTERY);
+    Page_DPad.TabVisible := SimWheel.HasCapability(CAP_DPAD);
     Page_Presets.TabVisible := Page_Clutch.TabVisible or
-      Page_AltButtons.TabVisible;
+      Page_AltButtons.TabVisible or Page_DPad.TabVisible;
+    Page_ButtonsMap.TabVisible := true;
+    LV_ButtonsMap.Clear;
+    LV_ButtonsMap.OnSelectItem(LV_ButtonsMap,nil,false);
     Btn_AutocalBattery.Visible := not SimWheel.HasCapability
       (CAP_BATTERY_CALIBRATION_AVAILABLE);
     Btn_ClutchAutocal.Visible := SimWheel.HasCapability(CAP_CLUTCH_ANALOG);
@@ -106,6 +134,8 @@ begin
       PC_main.ActivePageIndex := Page_Clutch.PageIndex
     else if (Page_AltButtons.TabVisible) then
       PC_main.ActivePageIndex := Page_AltButtons.PageIndex
+    else if (Page_DPad.TabVisible) then
+      PC_main.ActivePageIndex := Page_DPad.PageIndex
     else if (Page_battery.TabVisible) then
       PC_main.ActivePageIndex := Page_battery.PageIndex;
   end
@@ -126,6 +156,10 @@ begin
         RG_AltButtonsMode.ItemIndex := 0
       else
         RG_AltButtonsMode.ItemIndex := 1;
+      if (SimWheel.DPadMode) then
+        RG_DPadMode.ItemIndex := 0
+      else
+        RG_DPadMode.ItemIndex := 1;
       Lbl_SOC.Caption := Format('%d%%', [SimWheel.LastBatteryLevel]);
     except
       OnDeviceError;
@@ -143,7 +177,7 @@ begin
   count := 0;
   try
     TSimWheel.GetDevices(
-      procedure(devicePath: string)
+      procedure(devicePath: string; ID: UInt64)
       begin
         inc(count);
         lastPath := devicePath;
@@ -163,9 +197,9 @@ end;
 
 procedure TForm_main.OnDeviceError;
 begin
-//  Application.MessageBox('Device no longer present', 'Error',
-//    MB_ICONSTOP or MB_OK);
-//  FreeAndNil(SimWheel);
+  // Application.MessageBox('Device no longer present', 'Error',
+  // MB_ICONSTOP or MB_OK);
+  // FreeAndNil(SimWheel);
   OnDeviceNotConnected;
 end;
 
@@ -178,6 +212,7 @@ begin
   SimWheel := nil;
   Page_Devices.TabVisible := true;
   PC_main.ActivePageIndex := Page_Devices.PageIndex;
+  LV_ButtonsMap.Clear;
   ScanDevices;
 end;
 
@@ -199,6 +234,22 @@ begin
   if (SimWheel <> nil) then
     try
       SimWheel.AltMode := (RG_AltButtonsMode.ItemIndex = 0);
+    except
+      OnDeviceError;
+    end
+  else
+    OnDeviceNotConnected;
+end;
+
+// ---------------------------------------------------------------------------
+// Page: DPAD
+// ---------------------------------------------------------------------------
+
+procedure TForm_main.RG_DPadModeClick(Sender: TObject);
+begin
+  if (SimWheel <> nil) then
+    try
+      SimWheel.DPadMode := (RG_DPadMode.ItemIndex = 0);
     except
       OnDeviceError;
     end
@@ -282,7 +333,7 @@ end;
 procedure TForm_main.Btn_SaveToFileClick(Sender: TObject);
 var
   strm: TFileStream;
-  auxBool: boolean;
+  auxBool: Boolean;
   auxUint8: UInt8;
 begin
   if (SimWheel = nil) then
@@ -299,6 +350,8 @@ begin
         strm.Write(auxUint8, sizeof(auxUint8));
         strm.Write(SimWheel.BitePoint, sizeof(SimWheel.BitePoint));
         auxBool := SimWheel.AltMode;
+        strm.Write(auxBool, sizeof(auxBool));
+        auxBool := SimWheel.DPadMode;
         strm.Write(auxBool, sizeof(auxBool));
       finally
         strm.Free;
@@ -327,17 +380,113 @@ begin
         strm.Read(cfg.ClutchMode, sizeof(cfg.ClutchMode));
         strm.Read(cfg.BitePoint, sizeof(cfg.BitePoint));
         strm.Read(cfg.AltMode, sizeof(cfg.AltMode));
+        strm.Read(cfg.DPadMode, sizeof(cfg.DPadMode));
         cfg.SimpleCommand := $FF;
         SimWheel.SetConfig(cfg);
       finally
         strm.Free;
       end;
     except
-      ;
       Application.MessageBox('Unable to load file', 'Error',
         MB_OK or MB_ICONSTOP);
     end;
   RefreshDeviceState;
+end;
+
+// ---------------------------------------------------------------------------
+// Page: Buttons map
+// ---------------------------------------------------------------------------
+
+procedure TForm_main.OnRefreshButtonsMap(Sender: TObject);
+var
+  success: Boolean;
+  Item: TListItem;
+begin
+  if (SimWheel <> nil) then
+  begin
+    LV_ButtonsMap.Clear;
+    success := SimWheel.GetButtonsMap(
+      procedure(raw: TFirmwareButton; noAlt, alt: TUserButton)
+      begin
+        Item := LV_ButtonsMap.Items.Add;
+        Item.Caption := IntToStr(raw);
+        Item.SubItems.Add(IntToStr(noAlt));
+        Item.SubItems.Add(IntToStr(alt));
+      end);
+    if (not success) then
+    begin
+      LV_ButtonsMap.Clear();
+      Application.MessageBox('Unable to get buttons map. Trye later', 'Failure',
+        MB_OK or MB_ICONSTOP);
+    end;
+  end;
+  LV_ButtonsMap.Selected := nil;
+  LV_ButtonsMap.OnSelectItem(LV_ButtonsMap, nil, false);
+end;
+
+procedure TForm_main.LV_ButtonsMapSelectItem(Sender: TObject; Item: TListItem;
+Selected: Boolean);
+begin
+  Panel_EditMap.Enabled := (Item <> nil);
+  if (Panel_EditMap.Enabled) then
+  begin
+    Lbl_MapSelected.Caption := Item.Caption;
+    Edit_MapNoAlt.Value := StrToIntDef(Item.SubItems[0], 0);
+    Edit_MapAlt.Value := StrToIntDef(Item.SubItems[1], 0);
+    Edit_MapNoAlt.Visible := true;
+    Edit_MapAlt.Visible := true;
+    Btn_MapApply.Enabled := true;
+  end
+  else
+  begin
+    Lbl_MapSelected.Caption := '';
+    Edit_MapNoAlt.Visible := false;
+    Edit_MapAlt.Visible := false;
+    Btn_MapApply.Enabled := false;
+  end;
+end;
+
+procedure TForm_main.Btn_MapApplyClick(Sender: TObject);
+var
+  raw: UInt8;
+  noAlt: TUserButton;
+  alt: TUserButton;
+begin
+  raw := StrToIntDef(Lbl_MapSelected.Caption, $FF);
+  if ((Edit_MapNoAlt.Value < low(TUserButton)) or
+    (Edit_MapNoAlt.Value > high(TUserButton))) then
+    raw := $FF;
+  if ((Edit_MapAlt.Value < low(TUserButton)) or
+    (Edit_MapAlt.Value > high(TUserButton))) then
+    raw := $FF;
+  if (raw = $FF) then
+    exit;
+
+  alt := Edit_MapAlt.Value;
+  noAlt := Edit_MapNoAlt.Value;
+
+  if (LV_ButtonsMap.Selected <> nil) and (SimWheel <> nil) then
+  begin
+    SimWheel.SetButtonMap(TFirmwareButton(raw),noAlt,Alt);
+    LV_ButtonsMap.Selected.SubItems[0] := IntToStr(noAlt);
+    LV_ButtonsMap.Selected.SubItems[1] := IntToStr(alt);
+  end;
+
+end;
+
+procedure TForm_main.Btn_MapDefaultsClick(Sender: TObject);
+begin
+  if (SimWheel<>nil) then
+  begin
+    SimWheel.ResetButtonsMap;
+    OnRefreshButtonsMap(Form_main);
+  end;
+end;
+
+procedure TForm_main.Btn_SaveMapClick(Sender: TObject);
+begin
+  if (SimWheel<>nil) then
+    SimWheel.SaveNow;
 end;
 
 end.
