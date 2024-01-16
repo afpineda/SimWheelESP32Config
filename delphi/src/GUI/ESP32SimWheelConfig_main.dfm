@@ -28,44 +28,6 @@ object Form_main: TForm_main
     OnChange = PC_mainChange
     object Page_Devices: TTabSheet
       Caption = 'Devices'
-      object Lbl_DeviceReady: TLabel
-        Left = 0
-        Top = 0
-        Width = 454
-        Height = 41
-        Align = alTop
-        Alignment = taCenter
-        AutoSize = False
-        Caption = 'Ready'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clGreen
-        Font.Height = -16
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-        Layout = tlCenter
-        ExplicitTop = -6
-        ExplicitWidth = 386
-      end
-      object Lbl_DeviceNotReady: TLabel
-        Left = 0
-        Top = 41
-        Width = 454
-        Height = 41
-        Align = alTop
-        Alignment = taCenter
-        AutoSize = False
-        Caption = 'Not Ready'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clRed
-        Font.Height = -16
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-        Layout = tlCenter
-        ExplicitTop = 8
-        ExplicitWidth = 386
-      end
       object Btn_Scan: TButton
         Left = 0
         Top = 233
@@ -76,24 +38,20 @@ object Form_main: TForm_main
         TabOrder = 0
         OnClick = Btn_ScanClick
       end
-      object Lbl_TooManyDevices: TStaticText
+      object List_AvailableDevices: TListBox
         Left = 0
-        Top = 82
+        Top = 0
         Width = 454
-        Height = 71
-        Align = alTop
-        Alignment = taCenter
-        AutoSize = False
-        Caption = 
-          'Two or more devices were found. Only one device is supported. Tu' +
-          'rn off unneeded devices then scan again.'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -16
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
+        Height = 233
+        Style = lbVirtual
+        Align = alClient
+        BevelInner = bvNone
+        BevelOuter = bvNone
         TabOrder = 1
+        OnClick = List_AvailableDevicesClick
+        OnData = List_AvailableDevicesData
+        ExplicitTop = 82
+        ExplicitHeight = 151
       end
     end
     object Page_Clutch: TTabSheet
@@ -346,7 +304,6 @@ object Form_main: TForm_main
         Caption = 'Panel1'
         ShowCaption = False
         TabOrder = 3
-        ExplicitLeft = -3
         DesignSize = (
           454
           41)

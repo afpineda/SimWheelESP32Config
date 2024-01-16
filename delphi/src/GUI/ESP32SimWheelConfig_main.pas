@@ -12,6 +12,7 @@ unit ESP32SimWheelConfig_main;
 interface
 
 uses
+  System.Generics.Collections,
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, OpenSourceSimWheelESP32,
@@ -36,9 +37,6 @@ type
     Lbl_SocHeader: TLabel;
     Lbl_SOC: TLabel;
     Btn_Scan: TButton;
-    Lbl_DeviceReady: TLabel;
-    Lbl_DeviceNotReady: TLabel;
-    Lbl_TooManyDevices: TStaticText;
     Btn_LoadFromFile: TButton;
     Btn_SaveToFile: TButton;
     Dlg_FileOpen: TFileOpenDialog;
@@ -58,6 +56,7 @@ type
     Lbl_MapFirmware: TLabel;
     Lbl_MapSelected: TLabel;
     Btn_MapDefaults: TButton;
+    List_AvailableDevices: TListBox;
     procedure FormCreate(Sender: TObject);
     procedure PC_mainChange(Sender: TObject);
     procedure RG_AltButtonsModeClick(Sender: TObject);
@@ -75,9 +74,13 @@ type
     procedure Btn_MapApplyClick(Sender: TObject);
     procedure Btn_SaveMapClick(Sender: TObject);
     procedure Btn_MapDefaultsClick(Sender: TObject);
+    procedure List_AvailableDevicesData(Control: TWinControl; Index: Integer;
+      var Data: string);
+    procedure List_AvailableDevicesClick(Sender: TObject);
   private
     { Private declarations }
     SimWheel: TSimWheel;
+    AvailableDevices: TList<TSimWheel>;
     procedure OnDeviceNotConnected;
     procedure OnDeviceConnected;
     procedure RefreshDeviceState;
@@ -105,10 +108,10 @@ begin
   Page_Presets.TabVisible := false;
   Page_DPad.TabVisible := false;
   Page_ButtonsMap.TabVisible := false;
-  Lbl_DeviceReady.Visible := false;
-  Lbl_DeviceNotReady.Visible := true;
-  Lbl_TooManyDevices.Visible := false;
   PC_main.ActivePage := Page_Devices;
+  LV_ButtonsMap.Selected := nil;
+  LV_ButtonsMap.OnSelectItem(LV_ButtonsMap, nil, false);
+  ScanDevices;
 end;
 
 procedure TForm_main.OnDeviceConnected;
@@ -125,7 +128,7 @@ begin
       Page_AltButtons.TabVisible or Page_DPad.TabVisible;
     Page_ButtonsMap.TabVisible := true;
     LV_ButtonsMap.Clear;
-    LV_ButtonsMap.OnSelectItem(LV_ButtonsMap,nil,false);
+    LV_ButtonsMap.OnSelectItem(LV_ButtonsMap, nil, false);
     Btn_AutocalBattery.Visible := not SimWheel.HasCapability
       (CAP_BATTERY_CALIBRATION_AVAILABLE);
     Btn_ClutchAutocal.Visible := SimWheel.HasCapability(CAP_CLUTCH_ANALOG);
@@ -148,8 +151,8 @@ begin
   if (SimWheel <> nil) then
     try
       SimWheel.Update;
-      RG_ClutchMode.ItemIndex := integer(SimWheel.ClutchMode);
-      TB_BitePoint.Position := integer(SimWheel.BitePoint);
+      RG_ClutchMode.ItemIndex := Integer(SimWheel.ClutchMode);
+      TB_BitePoint.Position := Integer(SimWheel.BitePoint);
       TB_BitePoint.SelStart := 0;
       TB_BitePoint.SelEnd := TB_BitePoint.Position;
       if (SimWheel.AltMode) then
@@ -170,29 +173,28 @@ end;
 
 procedure TForm_main.ScanDevices;
 var
-  count: integer;
-  lastPath: string;
+  i: Integer;
 begin
-  FreeAndNil(SimWheel);
-  count := 0;
+  PC_main.ActivePage := Page_Devices;
+  for i := 0 to AvailableDevices.Count - 1 do
+    FreeAndNil(AvailableDevices[i]);
+  AvailableDevices.Clear;
+
+  SimWheel := nil;
   try
     TSimWheel.GetDevices(
       procedure(devicePath: string; ID: UInt64)
       begin
-        inc(count);
-        lastPath := devicePath;
+        AvailableDevices.Add(TSimWheel.Create(devicePath));
       end);
-    if (count = 1) then
-      SimWheel := TSimWheel.Create(lastPath);
   except
   end;
-  Lbl_DeviceReady.Visible := (SimWheel <> nil);
-  Lbl_DeviceNotReady.Visible := not Lbl_DeviceReady.Visible;
-  Lbl_TooManyDevices.Visible := (count > 1);
-  if (SimWheel <> nil) then
-    OnDeviceConnected
-  else
-    OnDeviceNotConnected;
+  List_AvailableDevices.Count := AvailableDevices.Count;
+  if (AvailableDevices.Count = 1) then
+  begin
+    List_AvailableDevices.ItemIndex := 0;
+    List_AvailableDevices.OnClick(List_AvailableDevices);
+  end;
 end;
 
 procedure TForm_main.OnDeviceError;
@@ -209,11 +211,12 @@ end;
 
 procedure TForm_main.FormCreate(Sender: TObject);
 begin
+  AvailableDevices := TList<TSimWheel>.Create;
   SimWheel := nil;
   Page_Devices.TabVisible := true;
   PC_main.ActivePageIndex := Page_Devices.PageIndex;
   LV_ButtonsMap.Clear;
-  ScanDevices;
+  OnDeviceNotConnected;
 end;
 
 // ---------------------------------------------------------------------------
@@ -317,10 +320,12 @@ begin
     MB_OKCANCEL or MB_ICONWARNING) = IDOK) then
   begin
     if (SimWheel <> nil) then
-    begin
-      SimWheel.ForceBatteryAutocalibration;
-      RefreshDeviceState;
-    end
+      try
+        SimWheel.ForceBatteryAutocalibration;
+        RefreshDeviceState;
+      except
+        OnDeviceError;
+      end
     else
       OnDeviceNotConnected;
   end;
@@ -403,25 +408,48 @@ var
   Item: TListItem;
 begin
   if (SimWheel <> nil) then
-  begin
-    LV_ButtonsMap.Clear;
-    success := SimWheel.GetButtonsMap(
-      procedure(raw: TFirmwareButton; noAlt, alt: TUserButton)
+    try
+      LV_ButtonsMap.Clear;
+      success := SimWheel.GetButtonsMap(
+        procedure(raw: TFirmwareButton; noAlt, alt: TUserButton)
+        begin
+          Item := LV_ButtonsMap.Items.Add;
+          Item.Caption := IntToStr(raw);
+          Item.SubItems.Add(IntToStr(noAlt));
+          Item.SubItems.Add(IntToStr(alt));
+        end);
+      if (not success) then
       begin
-        Item := LV_ButtonsMap.Items.Add;
-        Item.Caption := IntToStr(raw);
-        Item.SubItems.Add(IntToStr(noAlt));
-        Item.SubItems.Add(IntToStr(alt));
-      end);
-    if (not success) then
-    begin
-      LV_ButtonsMap.Clear();
-      Application.MessageBox('Unable to get buttons map. Trye later', 'Failure',
-        MB_OK or MB_ICONSTOP);
-    end;
-  end;
-  LV_ButtonsMap.Selected := nil;
-  LV_ButtonsMap.OnSelectItem(LV_ButtonsMap, nil, false);
+        LV_ButtonsMap.Clear();
+        Application.MessageBox('Unable to get buttons map. Try later.',
+          'Failure', MB_OK or MB_ICONSTOP);
+      end;
+    except
+      OnDeviceError;
+    end
+  else
+    OnDeviceNotConnected;
+end;
+
+procedure TForm_main.List_AvailableDevicesClick(Sender: TObject);
+begin
+  if (List_AvailableDevices.ItemIndex >= 0) then
+  begin
+    SimWheel := AvailableDevices[List_AvailableDevices.ItemIndex];
+  end
+  else
+    SimWheel := nil;
+  if (SimWheel <> nil) then
+    OnDeviceConnected
+  else
+    OnDeviceNotConnected;
+end;
+
+procedure TForm_main.List_AvailableDevicesData(Control: TWinControl;
+Index: Integer; var Data: string);
+begin
+  if (Index >= 0) and (Index < AvailableDevices.Count) then
+    Data := AvailableDevices[Index].Name;
 end;
 
 procedure TForm_main.LV_ButtonsMapSelectItem(Sender: TObject; Item: TListItem;
@@ -466,27 +494,40 @@ begin
   noAlt := Edit_MapNoAlt.Value;
 
   if (LV_ButtonsMap.Selected <> nil) and (SimWheel <> nil) then
-  begin
-    SimWheel.SetButtonMap(TFirmwareButton(raw),noAlt,Alt);
-    LV_ButtonsMap.Selected.SubItems[0] := IntToStr(noAlt);
-    LV_ButtonsMap.Selected.SubItems[1] := IntToStr(alt);
-  end;
-
+    try
+      SimWheel.SetButtonMap(TFirmwareButton(raw), noAlt, alt);
+      LV_ButtonsMap.Selected.SubItems[0] := IntToStr(noAlt);
+      LV_ButtonsMap.Selected.SubItems[1] := IntToStr(alt);
+    except
+      OnDeviceError;
+    end
+  else if (SimWheel = nil) then
+    OnDeviceNotConnected;
 end;
 
 procedure TForm_main.Btn_MapDefaultsClick(Sender: TObject);
 begin
-  if (SimWheel<>nil) then
-  begin
-    SimWheel.ResetButtonsMap;
-    OnRefreshButtonsMap(Form_main);
-  end;
+  if (SimWheel <> nil) then
+    try
+      SimWheel.ResetButtonsMap;
+      OnRefreshButtonsMap(Form_main);
+    except
+      OnDeviceError;
+    end
+  else
+    OnDeviceNotConnected;
 end;
 
 procedure TForm_main.Btn_SaveMapClick(Sender: TObject);
 begin
-  if (SimWheel<>nil) then
-    SimWheel.SaveNow;
+  if (SimWheel <> nil) then
+    try
+      SimWheel.SaveNow
+    except
+      OnDeviceNotConnected;
+    end
+  else
+    OnDeviceNotConnected;
 end;
 
 end.

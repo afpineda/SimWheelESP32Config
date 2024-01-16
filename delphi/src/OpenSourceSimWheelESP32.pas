@@ -60,6 +60,7 @@ type
     FFeatureReportSize: integer;
     FOutputReportSize: integer;
     FDeviceID: Uint64;
+    FName: string;
     FHandle: THandle;
 
     function GetClutchMode: TSimWheel.TClutchMode;
@@ -151,6 +152,9 @@ type
     // Last known battery level (if any)
     property LastBatteryLevel: UInt8 read FConfig.SimpleCommand;
 
+    // External name
+    property Name: string read FName write FName;
+
   end;
 
 implementation
@@ -240,12 +244,12 @@ begin
   Result := (pCaps^.magicNumber = MAGIC_NUMBER) and
     (pCaps^.majorVersion = DATA_MAJOR_VERSION) and
     (pCaps^.minorVersion >= DATA_MINOR_VERSION);
-  if (Result and hasNoCap(CAP_CLUTCH_BUTTON, pCaps^.flags) and
-    hasNoCap(CAP_CLUTCH_ANALOG, pCaps^.flags) and hasNoCap(CAP_ALT,
-    pCaps^.flags) and (hasNoCap(CAP_BATTERY, pCaps^.flags) or
-    not hasNoCap(CAP_BATTERY_CALIBRATION_AVAILABLE, pCaps^.flags)) and
-    hasNoCap(CAP_DPAD, pCaps^.flags)) then
-    Result := false;
+//  if (Result and hasNoCap(CAP_CLUTCH_BUTTON, pCaps^.flags) and
+//    hasNoCap(CAP_CLUTCH_ANALOG, pCaps^.flags) and hasNoCap(CAP_ALT,
+//    pCaps^.flags) and (hasNoCap(CAP_BATTERY, pCaps^.flags) or
+//    not hasNoCap(CAP_BATTERY_CALIBRATION_AVAILABLE, pCaps^.flags)) and
+//    hasNoCap(CAP_DPAD, pCaps^.flags)) then
+//    Result := false;
 end;
 
 // --------------------------------------------------------------------------
@@ -356,23 +360,6 @@ end;
 // Constructor / destructor
 // --------------------------------------------------------------------------
 
-// constructor TSimWheel.Create(const handle: THandle; const devicePath: string;
-// const majorVersion: UInt16; const minorVersion: UInt16; const flags: UInt16;
-// const inputReportSize, outputReportSize, featureReportSize: integer);
-// begin
-// FdevicePath := devicePath;
-// FdataMinorVersion := minorVersion;
-// FdataMajorVersion := majorVersion;
-// Fcapabilities := flags;
-// FInputReportSize := inputReportSize;
-// FOutputReportSize := outputReportSize;
-// FFeatureReportSize := featureReportSize;
-// FHandle := handle;
-// Update;
-// end;
-
-// --------------------------------------------------------------------------
-
 constructor TSimWheel.Create(const devicePath: string);
 var
   ppd: PHIDPPreparsedData;
@@ -406,6 +393,7 @@ begin
   FdataMinorVersion := capabilitiesReport.minorVersion;
   Fcapabilities := capabilitiesReport.flags;
   FDeviceID := capabilitiesReport.DeviceID;
+  FName := Format('%x',[FDeviceID]);
   Update;
 end;
 
