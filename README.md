@@ -15,6 +15,9 @@ A companion app for [ESP32 based open-source wireless steering wheel](https://gi
 - Map hardware buttons to user-defined HID buttons.
 - Supports all firmware versions to date (data versions 1.0 and 1.1).
 - Windows / Linux / Mac
+- UI languages (automatically detected):
+  - English (default)
+  - Español (Spanish)
 
 ## User documentation
 

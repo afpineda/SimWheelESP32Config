@@ -1,9 +1,14 @@
 # ****************************************************************************
 #  @author Ángel Fernández Pineda. Madrid. Spain.
 #  @date 2024-01-21
-#  @brief Configuration app for ESP32-based open source sim wheels
+#  @brief Configuration app for ESP32-based open source sim wheels (freezing)
 #  @copyright Creative Commons Attribution 4.0 International (CC BY 4.0)
 # *****************************************************************************
+
+# -------------------------- IMPORTANT NOTE --------------------------------
+# Your antivirus may get in the way
+# Add an exception rule
+# -------------------------- IMPORTANT NOTE --------------------------------
 
 import os
 import subprocess
@@ -27,8 +32,6 @@ if exists(".gitignore") and exists(".gitattributes"):
         f"{Path(nicegui.__file__).parent}{os.pathsep}nicegui",
         "--add-data",
         f"src\\ESP32SimWheelConfig\\LICENSE.txt{os.pathsep}.",
-        "--add-data",
-        f"src\\ESP32SimWheelConfig\\locale{os.pathsep}locale",
         "-i",
         "resources\\MainIcons.ico",
         "--hidden-import",

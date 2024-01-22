@@ -13,7 +13,7 @@ from enum import Enum
 from locale import getlocale, setlocale, LC_ALL
 
 
-class LangException(Exception):
+class TranslatorException(Exception):
     """Exception for ill-formed or invalid language translators"""
 
     pass
@@ -51,12 +51,12 @@ def __initialize():
     global __current_translator
     __first_call = False
     if len(__translators) == 0:
-        raise LangException("There are no language translator classes")
+        raise TranslatorException("There are no language translator classes")
     if not __default_translator:
         if len(__translators) == 1:
             __default_translator = __translators[0]
         else:
-            raise LangException("There is no default translator class")
+            raise TranslatorException("There is no default translator class")
     for translator in __translators:
         __check_strings(translator, __default_translator)
         if translator.is_translator(__current_lang):
@@ -70,7 +70,7 @@ def __check_strings(cls: AppStrings, against: AppStrings):
         for id in against:
             attr_name = id._name_
             if not hasattr(cls, attr_name) and (attr_name != "_lang"):
-                raise LangException(
+                raise TranslatorException(
                     f"String ID '{attr_name}' is missing at translator '{cls.__name__}'"
                 )
 
@@ -82,9 +82,9 @@ def gettext(id) -> str:
     if __first_call:
         __initialize()
     if __current_translator:
-        return getattr(__current_translator, id._name_)
+        return getattr(__current_translator, id._name_)._value_
     else:
-        raise LangException("No translator for string ")
+        raise TranslatorException("No translator for string ")
 
 
 def install(translator: AppStrings, is_default=False):
@@ -97,7 +97,7 @@ def install(translator: AppStrings, is_default=False):
             Must exist one default translator in every application.
 
     Raises:
-        LangException: The given translator is not valid
+        TranslatorException: The given translator is not valid
     """
     global __default_translator
     global __translators
@@ -105,7 +105,7 @@ def install(translator: AppStrings, is_default=False):
     __first_call = True
     if issubclass(translator, AppStrings):
         if not hasattr(translator, "_lang"):
-            raise LangException(
+            raise TranslatorException(
                 f"{translator.__name__} is missing the '_lang' attribute"
             )
         if is_default:
@@ -113,7 +113,7 @@ def install(translator: AppStrings, is_default=False):
         if translator not in __translators:
             __translators.append(translator)
     else:
-        raise LangException(f"{translator.__name__} is not a translation class")
+        raise TranslatorException(f"{translator.__name__} is not a translation class")
     if is_default:
         for other in __translators:
             __check_strings(other, translator)
@@ -233,7 +233,7 @@ if __name__ == "__main__":
     install(ES, True)
     install(EN)
     t = gettext(ES.TEST)
-    if t != EN.TEST:
+    if t != EN.TEST._value_:
         print("Failure")
     print("Done")
 
@@ -243,7 +243,7 @@ if __name__ == "__main__":
     install(ES)
     install(EN, True)
     t = gettext(ES.TEST)
-    if t != EN.TEST:
+    if t != EN.TEST._value_:
         print("Failure")
     print("Done")
 
@@ -253,6 +253,6 @@ if __name__ == "__main__":
     install(ES)
     install(EN, True)
     t = gettext(ES.TEST)
-    if t != ES.TEST:
+    if t != ES.TEST._value_:
         print("Failure")
     print("Done")

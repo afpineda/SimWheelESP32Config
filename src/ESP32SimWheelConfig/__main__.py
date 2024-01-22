@@ -16,26 +16,93 @@ else:
 from nicegui import ui, app, run
 import webview
 from json import dumps, loads
-import gettext
-import locale
+from appstrings import *
 
 ##################################################################################################
 
-# Note: gettext tools for Windows available at
-#       https://mlocati.github.io/articles/gettext-iconv-windows.html
-
-# def _(s: str):
+# def _(STR.s: str):
 #     return s
 
-locale.setlocale(locale.LC_ALL, "")
-lang = locale.getlocale()[0][0:2]
-print(f"User language: {lang}")
-i18n = gettext.translation(
-    "ESP32SimWheel", "./locale", fallback=True, languages=[lang]
-)
-i18n.install()
-_ = gettext.gettext
+_ = gettext
 
+class STR(AppStrings):
+    _lang = "en"
+    ALT_BUTTONS = "ALT buttons"
+    ALT_MODE = "Alternate mode"
+    ANALOG_AXES = "Analog axes"
+    AVAILABLE_DEVICES = "Available devices"
+    AXIS = "Axis"
+    BATTERY = "Battery"
+    BITE_POINT = "Bite point"
+    BUTTON = "Button"
+    BUTTONS_MAP = "Buttons map"
+    CHECK_ID = "Check device identity"
+    CLUTCH = "Clutch"
+    CLUTCH_PADDLES = "Clutch paddles"
+    DEFAULTS = "Defaults"
+    DONE = "Done!"
+    DPAD = "Directional pad"
+    ERROR = "Error!"
+    FIRMWARE_DEFINED = "Firmware-defined"
+    INCLUDE_BTN_MAP = "Include buttons map"
+    INVALID_BTN = "Invalid button number (valid numbers are in the range 0-127)"
+    LOAD = "Load"
+    LOCAL_PROFILE = "Local profile"
+    NAV = "Navigation"
+    NO_DEVICE = "No device"
+    NO_DEVICES_FOUND = "No devices found"
+    PROFILE_CHECK_TOOLTIP = "Uncheck to load settings from another sim wheel/button box"
+    RECALIBRATE = "Recalibrate"
+    REGULAR_BUTTON =  "Regular button"
+    RELOAD = "Reload"
+    SAVE = "Save"
+    SELECT = "Select"
+    SOC = "State of charge"
+    USER_DEFINED = "User-defined"
+    USER_DEFINED_ALT = "User-defined Alt Mode"
+    WAIT = "Please, wait..."
+
+
+
+class ES(AppStrings):
+    _lang = "es"
+    ALT_BUTTONS = "Botones ALT"
+    ALT_MODE = "Modo alternativo"
+    ANALOG_AXES = "Ejes analógicos"
+    AVAILABLE_DEVICES = "Dispositivos disponibles"
+    AXIS = "Eje"
+    BATTERY = "Batería"
+    BITE_POINT = "Punto de mordida"
+    BUTTON = "Botón"
+    BUTTONS_MAP = "Mapa de botones"
+    CHECK_ID = "Comprobar identidad del dispositivo"
+    CLUTCH = "Embrague"
+    CLUTCH_PADDLES = "Paletas de embrague"
+    DEFAULTS = "Por defecto"
+    DONE = "¡Hecho!"
+    DPAD = "Cruceta direccional"
+    ERROR = "¡Error!"
+    FIRMWARE_DEFINED = "Del firmware"
+    INCLUDE_BTN_MAP = "Incluir mapa de botones"
+    INVALID_BTN = "Número de botón inválido (los válidos están en el rango 0-127)"
+    LOAD = "Cargar"
+    LOCAL_PROFILE = "Perfil local"
+    NAV = "Navegación"
+    NO_DEVICE = "Sin dispositivo"
+    NO_DEVICES_FOUND = "No se halló dispositivo alguno"
+    PROFILE_CHECK_TOOLTIP = "Desmarcar para cargar los ajustes de otro volante / caja de botones"
+    RECALIBRATE = "Recalibrar"
+    REGULAR_BUTTON =  "Botón normal"
+    RELOAD = "Recargar"
+    SAVE = "Salvar"
+    SELECT = "Seleccionar"
+    SOC = "Estado de carga"
+    USER_DEFINED = "Del usuario"
+    USER_DEFINED_ALT = "Del usuario modo ALT"
+    WAIT = "Por favor, espere..."
+
+install(STR,True)
+install(ES)
 
 ##################################################################################################
 
@@ -49,20 +116,20 @@ buttons_map_data = []
 
 __buttons_map_columns = [
     {
-        "headerName": "Firmware-defined",
+        "headerName": _(STR.FIRMWARE_DEFINED),
         "field": "firmware",
         "wrapHeaderText": True,
         "autoHeaderHeight": True,
     },
     {
-        "headerName": "User-defined",
+        "headerName": _(STR.USER_DEFINED),
         "field": "user",
         "editable": True,
         "wrapHeaderText": True,
         "autoHeaderHeight": True,
     },
     {
-        "headerName": "User-defined Alt Mode",
+        "headerName": _(STR.USER_DEFINED_ALT),
         "field": "userAltMode",
         "editable": True,
         "wrapHeaderText": True,
@@ -73,16 +140,16 @@ __buttons_map_columns = [
 
 def please_wait():
     notification = ui.notification(timeout=None)
-    notification.message = _("Please, wait...")
+    notification.message = _(STR.WAIT)
     notification.spinner = True
     return notification
 
 
 def notify_done(result: bool = True):
     if result:
-        ui.notify(_("Done!"))
+        ui.notify(_(STR.DONE))
     else:
-        ui.notify(_("Error!"), type="negative")
+        ui.notify(_(STR.ERROR), type="negative")
 
 
 def _refresh_available_devices():
@@ -97,13 +164,13 @@ def _refresh_available_devices():
                 ui.label(sim_wheel.product_name).classes("text-overline")
                 ui.label(sim_wheel.manufacturer).classes("font-thin")
                 ui.label(f"{sim_wheel.deviceID:X}").classes("font-thin")
-                ui.button(_("Select"), icon="task_alt").classes("self-center").on(
+                ui.button(_(STR.SELECT), icon="task_alt").classes("self-center").on(
                     "click", lambda path=sim_wheel.path: select_device(path)
                 )
         sim_wheel.close()
     if count == 0:
         with available_devices_ph:
-            ui.label(_("No devices found")).classes(
+            ui.label(_(STR.NO_DEVICES_FOUND)).classes(
                 replace="text-negative", add="text-weight-bold"
             )
 
@@ -155,7 +222,7 @@ def buttons_map_value_change(changes):
     value = changes.args["value"]
     if (value < 0) or (value > 127):
         ui.notify(
-            _("Invalid button number (valid numbers are in the range 0-127)"),
+            _(STR.INVALID_BTN),
             type="negative",
             multi_line=True,
         )
@@ -298,14 +365,14 @@ with ui.header():
         headerLabel.bind_text_from(
             device,
             "is_alive",
-            backward=lambda isReady: device.product_name if isReady else _("No device"),
+            backward=lambda isReady: device.product_name if isReady else _(STR.NO_DEVICE),
         )
 
 drawer = ui.left_drawer(value=False).props("behavior=desktop")
 drawer.on("show", refresh_available_devices)
 with drawer:
     with ui.row().classes("w-full"):
-        ui.label(_("Available devices")).classes("text-h6")
+        ui.label(_(STR.AVAILABLE_DEVICES)).classes("text-h6")
         ui.space()
         ui.button(icon="refresh").props("flat dense").on(
             "click", refresh_available_devices, throttle=1
@@ -313,33 +380,33 @@ with drawer:
     ui.separator()
     available_devices_ph = ui.column().classes("w-full justify-center")
 
-alt_buttons_group = ui.expansion(_("ALT buttons"), value=True, icon="touch_app")
+alt_buttons_group = ui.expansion(_(STR.ALT_BUTTONS), value=True, icon="touch_app")
 alt_buttons_group.classes("text-h6")
 alt_buttons_group.tailwind.font_weight("bold")
 alt_buttons_group.bind_visibility_from(device, "has_alt_buttons")
 with alt_buttons_group:
-    ui.toggle({True: _("ALT mode"), False: _("Regular button")}).bind_value(
+    ui.toggle({True: _(STR.ALT_MODE), False: _(STR.REGULAR_BUTTON)}).bind_value(
         device, "alt_buttons_working_mode"
     )
 
-dpad_group = ui.expansion(_("Directional pad"), value=True, icon="gamepad")
+dpad_group = ui.expansion(_(STR.DPAD), value=True, icon="gamepad")
 dpad_group.classes("text-h6")
 dpad_group.tailwind.font_weight("bold")
 dpad_group.bind_visibility_from(device, "has_dpad")
 with dpad_group:
-    ui.toggle({True: _("Navigation"), False: _("Regular button")}).bind_value(
+    ui.toggle({True: _(STR.NAV), False: _(STR.REGULAR_BUTTON)}).bind_value(
         device, "dpad_working_mode"
     )
 
-clutch_paddles_group = ui.expansion(_("Clutch paddles"), value=True, icon="garage")
+clutch_paddles_group = ui.expansion(_(STR.CLUTCH_PADDLES), value=True, icon="garage")
 clutch_paddles_group.classes("text-h6")
 clutch_paddles_group.tailwind.font_weight("bold")
 clutch_paddles_group.bind_visibility_from(device, "has_clutch")
 with clutch_paddles_group:
     ui.toggle(
-        {0: _("Clutch"), 1: "Axis", 2: _("Alternate mode"), 3: _("Button")}
+        {0: _(STR.CLUTCH), 1: _(STR.AXIS), 2: _(STR.ALT_MODE), 3: _(STR.BUTTON)}
     ).bind_value(device, "clutch_working_mode")
-    ui.label(_("Bite point")).classes("self-center").tailwind.font_size("sm")
+    ui.label(_(STR.BITE_POINT)).classes("self-center").tailwind.font_size("sm")
     bite_point_slider = ui.slider(min=0, max=254, step=1)
     bite_point_slider.bind_value_from(device, "bite_point")
     bite_point_slider.bind_enabled_from(
@@ -353,44 +420,44 @@ with clutch_paddles_group:
         throttle=0.25,
         leading_events=False,
     )
-    ui.label(_("Analog axes")).classes("self-center").bind_visibility_from(
+    ui.label(_(STR.ANALOG_AXES)).classes("self-center").bind_visibility_from(
         device, "has_analog_clutch_paddles"
     ).tailwind.font_size("sm")
     ui.button(
-        _("Recalibrate"),
+        _(STR.RECALIBRATE),
         icon="autorenew",
         on_click=lambda: device.recalibrate_analog_axes(),
     ).bind_visibility_from(device, "has_analog_clutch_paddles").classes("self-center")
 
-battery_group = ui.expansion(_("Battery"), value=True, icon="battery_full")
+battery_group = ui.expansion(_(STR.BATTERY), value=True, icon="battery_full")
 battery_group.classes("text-h6")
 battery_group.tailwind.font_weight("bold")
 battery_group.bind_visibility_from(device, "has_battery")
 with battery_group:
-    ui.label(_("State of charge")).classes("self-center").tailwind.font_size("sm")
+    ui.label(_(STR.SOC)).classes("self-center").tailwind.font_size("sm")
     ui.linear_progress(show_value=False).bind_value_from(
         device, "battery_soc", backward=lambda v: v / 100
     )
     ui.button(
-        _("Recalibrate"),
+        _(STR.RECALIBRATE),
         icon="autorenew",
         on_click=lambda: device.recalibrate_battery(),
     ).bind_visibility_from(device, "battery_calibration_available").classes(
         "self-center"
     )
 
-buttons_map_group = ui.expansion(_("Buttons map"), value=False, icon="map")
+buttons_map_group = ui.expansion(_(STR.BUTTONS_MAP), value=False, icon="map")
 buttons_map_group.classes("text-h6")
 buttons_map_group.tailwind.font_weight("bold")
 buttons_map_group.bind_visibility_from(device, "has_buttons_map")
 with buttons_map_group:
     with ui.row().classes("self-center"):
         btn_map_reload = ui.button(
-            _("Reload"), icon="sync", on_click=reload_buttons_map
+            _(STR.RELOAD), icon="sync", on_click=reload_buttons_map
         )
-        btn_map_save = ui.button(_("Save"), icon="save", on_click=save_now)
+        btn_map_save = ui.button(_(STR.SAVE), icon="save", on_click=save_now)
         btn_map_defaults = ui.button(
-            _("Defaults"), icon="factory", on_click=buttons_map_factory_defaults
+            _(STR.DEFAULTS), icon="factory", on_click=buttons_map_factory_defaults
         )
 
     buttons_map_grid = ui.aggrid(
@@ -402,24 +469,24 @@ with buttons_map_group:
         }
     ).on("cellValueChanged", buttons_map_value_change)
 
-profile_group = ui.expansion(_("Local profile"), value=False, icon="inventory_2")
+profile_group = ui.expansion(_(STR.LOCAL_PROFILE), value=False, icon="inventory_2")
 profile_group.classes("text-h6")
 profile_group.tailwind.font_weight("bold")
 profile_group.bind_visibility_from(device, "is_alive")
 with profile_group:
-    check_profile_same_device = ui.checkbox(_("Check device identity"), value=True)
+    check_profile_same_device = ui.checkbox(_(STR.CHECK_ID), value=True)
     check_profile_same_device.tailwind.font_size("sm")
     with check_profile_same_device:
-        ui.tooltip(_("Uncheck to load settings from another sim wheel/button box"))
+        ui.tooltip(_(STR.PROFILE_CHECK_TOOLTIP))
     check_profile_buttons_map = ui.checkbox(
-        _("Include buttons map"), value=False
+        _(STR.INCLUDE_BTN_MAP), value=False
     ).bind_visibility_from(device, "has_buttons_map")
     with ui.row().classes("self-center"):
         btn_load_profile = ui.button(
-            _("Load"), icon="file_upload", on_click=load_profile
+            _(STR.LOAD), icon="file_upload", on_click=load_profile
         )
         btn_save_profile = ui.button(
-            _("Save"), icon="file_download", on_click=save_profile
+            _(STR.SAVE), icon="file_download", on_click=save_profile
         )
 
 ##################################################################################################
