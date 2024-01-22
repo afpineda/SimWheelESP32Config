@@ -12,11 +12,17 @@ if __package__:
     from . import esp32simwheel
 else:
     import esp32simwheel
+
 from nicegui import ui, app, run
+import webview
+from json import dumps, loads
+from io import StringIO
 
 ##################################################################################################
 
 device = esp32simwheel.SimWheel()
+
+PROFILE_FILE_TYPE = ("Device profiles (*.swjson)",)
 
 ##################################################################################################
 
@@ -46,6 +52,20 @@ __buttons_map_columns = [
 ]
 
 
+def please_wait():
+    notification = ui.notification(timeout=None)
+    notification.message = "Please, wait..."
+    notification.spinner = True
+    return notification
+
+
+def notify_done(result: bool = True):
+    if result:
+        ui.notify("Done!")
+    else:
+        ui.notify("Error!", type="negative")
+
+
 def _refresh_available_devices():
     print("Refreshing device list")
     available_devices_ph.clear()
@@ -70,11 +90,8 @@ def _refresh_available_devices():
 
 
 async def refresh_available_devices():
-    notification = ui.notification(timeout=None)
-    notification.message = "Please, wait..."
-    notification.spinner = True
+    notification = please_wait()
     await run.io_bound(_refresh_available_devices)
-    # _refresh_available_devices()
     notification.dismiss()
 
 
@@ -151,9 +168,7 @@ def _reload_buttons_map():
 
 async def reload_buttons_map():
     buttons_group_enable(False)
-    notification = ui.notification(timeout=None)
-    notification.message = "Please, wait..."
-    notification.spinner = True
+    notification = please_wait()
     await run.io_bound(_reload_buttons_map)
     buttons_map_grid.update()
     buttons_group_enable(True)
@@ -163,7 +178,7 @@ async def reload_buttons_map():
 async def save_now():
     buttons_group_enable(False)
     device.save_now()
-    ui.notify("Saved!")
+    notify_done()
     buttons_group_enable(True)
 
 
@@ -171,6 +186,86 @@ async def buttons_map_factory_defaults():
     device.reset_buttons_map()
     await reload_buttons_map()
     await save_now()
+
+
+def profile_group_enable(enabled: bool = True):
+    profile_group.enabled = enabled
+    btn_load_profile.enabled = enabled
+    btn_save_profile.enabled = enabled
+    check_profile_buttons_map.enabled = enabled
+    check_profile_same_device.enabled = enabled
+
+
+def _load_profile(filename: str) -> bool:
+    print(f"Loading profile from {filename}")
+    try:
+        f = open(filename, "r", encoding="utf-8")
+        try:
+            json = f.read()
+            content = loads(json)
+            if check_profile_same_device.value:
+                idCheckOk = ("deviceID" in content) and (
+                    content["deviceID"] == device.deviceID
+                )
+            else:
+                idCheckOk = True
+            if not idCheckOk:
+                f.close()
+                return False
+            if not check_profile_buttons_map.value:
+                content.pop("ButtonsMap", None)
+            device.deserialize(content)
+        finally:
+            f.close()
+        return True
+    except:
+        return False
+
+
+async def load_profile():
+    filename = await app.native.main_window.create_file_dialog(
+        allow_multiple=False, file_types=PROFILE_FILE_TYPE
+    )
+    if filename:
+        notification = please_wait()
+        profile_group_enable(False)
+        done = await run.io_bound(_load_profile, filename[0])
+        notification.dismiss()
+        profile_group_enable(True)
+        notify_done(done)
+
+
+def _save_profile(filename: str) -> bool:
+    print(f"Saving profile to {filename}")
+    try:
+        content = device.serialize()
+        content["deviceID"] = device.deviceID
+        if not check_profile_buttons_map.value:
+            content.pop("ButtonsMap", None)
+        json = dumps(content)
+        f = open(filename, "w", encoding="utf-8")
+        try:
+            f.write(json)
+        finally:
+            f.close()
+        return True
+    except:
+        return False
+
+
+async def save_profile():
+    filename = await app.native.main_window.create_file_dialog(
+        allow_multiple=False,
+        dialog_type=webview.SAVE_DIALOG,
+        file_types=PROFILE_FILE_TYPE,
+    )
+    if filename:
+        notification = please_wait()
+        profile_group_enable(False)
+        done = await run.io_bound(_save_profile, filename)
+        notification.dismiss()
+        profile_group_enable(True)
+        notify_done(done)
 
 
 ##################################################################################################
@@ -271,9 +366,7 @@ buttons_map_group.tailwind.font_weight("bold")
 buttons_map_group.bind_visibility_from(device, "has_buttons_map")
 with buttons_map_group:
     with ui.row().classes("self-center"):
-        btn_map_reload = ui.button(
-            "Reload", icon="sync", on_click=reload_buttons_map
-        )
+        btn_map_reload = ui.button("Reload", icon="sync", on_click=reload_buttons_map)
         btn_map_save = ui.button("Save", icon="save", on_click=save_now)
         btn_map_defaults = ui.button(
             "Defaults", icon="factory", on_click=buttons_map_factory_defaults
@@ -288,7 +381,23 @@ with buttons_map_group:
         }
     ).on("cellValueChanged", buttons_map_value_change)
 
-# ui.page_title("ESP32 open-source sim wheel / button box")
+profile_group = ui.expansion("Local profile", value=False, icon="inventory_2")
+profile_group.classes("text-h6")
+profile_group.tailwind.font_weight("bold")
+profile_group.bind_visibility_from(device, "is_alive")
+with profile_group:
+    check_profile_same_device = ui.checkbox("Check device identity", value=True)
+    check_profile_same_device.tailwind.font_size("sm")
+    with check_profile_same_device:
+        ui.tooltip("Uncheck to load settings from another sim wheel/button box")
+    check_profile_buttons_map = ui.checkbox(
+        "Include buttons map", value=False
+    ).bind_visibility_from(device, "has_buttons_map")
+    with ui.row().classes("self-center"):
+        btn_load_profile = ui.button("Load", icon="file_upload", on_click=load_profile)
+        btn_save_profile = ui.button(
+            "save", icon="file_download", on_click=save_profile
+        )
 
 ##################################################################################################
 

@@ -493,12 +493,14 @@ class SimWheel:
         if (rawInputNumber < 0) or (rawInputNumber >= 64):
             raise ValueError("rawInputNumber not in the range 0..63")
         if self._is_ready():
+            if self.__dataMinorVersion == 0:
+                return {}
             try:
                 self._send_buttons_map_report((rawInputNumber, 0xFF, 0xFF))
                 report = self._get_buttons_map_report()
             except:
                 self.close()
-                return ()
+                return {}
 
             if report[0] != rawInputNumber:
                 raise AnotherAppInterferesError("Try later")
@@ -544,11 +546,17 @@ class SimWheel:
             Index 1 or key \"user\": An user-defined button number in the range from 0 to 127, inclusive.
             Index 2 or key \"userAltMode\": the same as index 1, but for alternate mode.
         """
-        if (type(tupleOrListOrDict)==tuple) or (type(tupleOrListOrDict)==list):
-            if (len(tupleOrListOrDict)==3):
-                self.set_button_map(tupleOrListOrDict[0],tupleOrListOrDict[1],tupleOrListOrDict[2])
-        elif (type(tupleOrListOrDict)==dict):
-            self.set_button_map(tupleOrListOrDict['firmware'],tupleOrListOrDict['user'],tupleOrListOrDict['userAltMode'])
+        if (type(tupleOrListOrDict) == tuple) or (type(tupleOrListOrDict) == list):
+            if len(tupleOrListOrDict) == 3:
+                self.set_button_map(
+                    tupleOrListOrDict[0], tupleOrListOrDict[1], tupleOrListOrDict[2]
+                )
+        elif type(tupleOrListOrDict) == dict:
+            self.set_button_map(
+                tupleOrListOrDict["firmware"],
+                tupleOrListOrDict["user"],
+                tupleOrListOrDict["userAltMode"],
+            )
 
     def enumerate_buttons_map(self):
         """Enumerates all available firmware-defined button numbers and their current user-defined map."""
@@ -573,6 +581,59 @@ class SimWheel:
             )
         else:
             return False
+
+    def serialize(self, all: bool = False) -> dict:
+        """Returns a dictionary containing current device settings
+
+        Args:
+            all (bool, optional): When False, not user-configurable settings are omitted.
+            Otherwise, default values are given for those.
+
+        Returns:
+            dict: A representation of current user settings
+        """
+        result = {}
+        if all or self.has_alt_buttons:
+            result["AltWorkingMode"] = self.alt_buttons_working_mode
+        if all or self.has_dpad:
+            result["DpadWorkingMode"] = self.dpad_working_mode
+        if all or self.has_clutch:
+            result["Clutch"] = [self.clutch_working_mode, self.bite_point]
+        if self.has_buttons_map:
+            try:
+                result["ButtonsMap"] = list(self.enumerate_buttons_map())
+            except:
+                pass
+        elif all:
+            result["ButtonsMap"] = [
+                {
+                    "firmware": i,
+                    "user": i,
+                    "userAltMode": i + 64,
+                }
+                for i in range(0, 64)
+            ]
+
+        return result
+
+    def deserialize(self, source: dict):
+        """Updates device user settings from the given dictionary
+
+        Args:
+            source (dict): A dictionary object as returned by serialize()
+        """
+        if "AltWorkingMode" in source:
+            self.alt_buttons_working_mode = source["AltWorkingMode"]
+        if "DpadWorkingMode" in source:
+            self.dpad_working_mode = source["DpadWorkingMode"]
+        if "Clutch" in source:
+            self.clutch_working_mode = source["Clutch"][0]
+            self.bite_point = source["Clutch"][1]
+        if "ButtonsMap" in source:
+            buttons_map = source["ButtonsMap"]
+            if type(buttons_map) == list:
+                for m in buttons_map:
+                    self.set_button_map_tuple(m)
 
 
 ###############################################################################
@@ -610,8 +671,5 @@ if __name__ == "__main__":
         print(f"Manufacturer: {sim_wheel.manufacturer}")
         print(f"Product: {sim_wheel.product_name}")
         print(f"Device ID: {sim_wheel.deviceID}")
-        print(f"Device ID: {sim_wheel.deviceID}")
-        print(f"Configurable: {sim_wheel.is_user_configurable}")
-        if (sim_wheel.has_buttons_map):
-            for map in sim_wheel.enumerate_buttons_map():
-                print(f"  Map: {map['firmware']} --> {map['user']} and {map['userAltMode']}")
+        print("Please, wait while loading user settings...")
+        print(sim_wheel.serialize(includeButtonsMap=True))

@@ -6,6 +6,7 @@ A companion app for [ESP32 based open-source wireless steering wheel](https://gi
 
 ## Features
 
+- Load/save from/to file.
 - Handle multiple connected devices.
 - Choose working mode of clutch paddles, "ALT" buttons and/or directional pad.
 - Set clutch bite point.
