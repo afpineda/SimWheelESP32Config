@@ -20,3 +20,10 @@
 
 - Handle multiple devices available at the same time.
 - Minor bug fixes.
+
+## 2.0.0
+
+- Moving to Python implementation.
+- A change in the settings through the hardware itself is
+  automatically reflected in the app without a explicit refresh.
+- Backwards-compatible: support for 1.0 and 1.1 data versions.

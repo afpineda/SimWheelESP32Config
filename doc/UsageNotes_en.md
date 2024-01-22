@@ -1,30 +1,34 @@
 # Usage notes
 
-There are 6 tabs in the app. However, any configuration option not relevant to your device will not show up:
+## Startup
 
-- "Devices" tab: device scanning and selection.
-- "Clutch paddles" tab": configure the working mode of clutch paddles.
-- "ALT buttons" tab: configure the working mode of "ALT" buttons.
-- "Battery" tab: show state of charge. If your battery is not calibrated, you may request a battery auto-calibration.
-- "Presets" tab: load/save all configuration options.
-- "Buttons map" tab: customize button numbers.
+At startup, connected devices will be automatically scanned.
+When found, the app will connect to the first available one.
 
-If you change any configuration option through the device itself, select another tab for a refresh.
+Note that bluetooth devices **must be paired** first
+in order for this app to detect them.
 
-## "Devices" tab
+## Select another sim wheel / button box
 
-- On start, suitable devices are automatically scanned. If only one is available, it is automatically selected.
-- Hit "Scan" to re-scan available devices.
-- Select a device in the list to connect.
-- Incompatible devices will not show up.
-  If that were your case, use an older version of this app or update your firmware.
+Click on the "drawer" button on the top-left corner.
+Available devices will be automatically scanned and listed.
+If your device is not connected yet, connect it, wait a second, and
+click on the "refresh" button.
 
-## "Buttons map" tab
+Note that devices with no user-configurable settings will never show up.
 
-- Changes are **not** automatically saved.
-- Click "Refresh" to download current map (may take a few seconds).
-- Click "save" to make any change available after power off.
-- Click "Defaults" to return to "factory defaults" (not saved).
+Click on the "Select" button in order to connect to that device.
+
+## User settings
+
+Only **user-configurable** settings will show up, which depends on your device capabilities.
+
+## "Buttons map"
+
+- Click "Reload" to download current map from the device (may take a few seconds).
+- Changes are immediately applied, but **not** automatically saved to the device.
+- Click "Save" to make any change available after power off.
+- Click "Defaults" to revert to "factory defaults".
 - Button numbers are 0-based. For example, button #0 is the first button.
   Note that the following button numbers have a special meaning in Windows:
   - *00*: "A" button
@@ -35,3 +39,12 @@ If you change any configuration option through the device itself, select another
   - *05*: "RB" button (should be reserved for the right shift paddle)
   - *06*: "Back" button
   - *07*: "Start" button.
+- "Firmware-defined" button numbers are fixed and hardware-dependant.
+- The "user-defined" button number is reported to the hosting PC when the
+  corresponding "firmware-defined" button is pressed.
+  By default, this is the same as the "firmware-defined" button number.
+- The "user-defined" button number in "alt mode" is reported to the hosting PC when the
+  corresponding "firmware-defined" button is pressed and "alternate mode" is engaged.
+  By default, this is the same as the "firmware-defined" button number plus 64.
+- Any user-defined button number is in the range from 0 to 127 (inclusive), which is the absolute maximum
+  count of buttons supported by the operating system.

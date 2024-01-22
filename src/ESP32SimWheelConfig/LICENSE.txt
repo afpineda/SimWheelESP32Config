@@ -1,0 +1,31 @@
+********************
+ESP32SimWheelConfig
+********************
+
+A companion app for ESP32 open-source sim-wheels and button boxes.
+https://github.com/afpineda/OpenSourceSimWheelESP32
+
+License
+--------
+
+This app is distributed under Creative Commons Attribution 4.0 International license.
+See https://creativecommons.org/licenses/by/4.0/
+
+
+Licensed work
+--------------
+
+This app uses the following libraries under a compatible license:
+
+- "hidapi" from Gary Bishop: https://github.com/trezor/cython-hidapi?tab=License-4-ov-file
+
+  Available under several licenses, including public domain.
+
+- "nicegui" from Zauberzeug GmbH: https://nicegui.io/
+
+  Available under MIT license (https://mit-license.org/)
+
+Source code
+------------
+
+https://github.com/afpineda/SimWheelESP32Config
