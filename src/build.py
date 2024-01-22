@@ -27,6 +27,8 @@ if exists(".gitignore") and exists(".gitattributes"):
         f"{Path(nicegui.__file__).parent}{os.pathsep}nicegui",
         "--add-data",
         f"src\\ESP32SimWheelConfig\\LICENSE.txt{os.pathsep}.",
+        "--add-data",
+        f"src\\ESP32SimWheelConfig\\locale{os.pathsep}locale",
         "-i",
         "resources\\MainIcons.ico",
         "--hidden-import",

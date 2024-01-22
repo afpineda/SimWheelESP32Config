@@ -559,7 +559,11 @@ class SimWheel:
             )
 
     def enumerate_buttons_map(self):
-        """Enumerates all available firmware-defined button numbers and their current user-defined map."""
+        """Enumerates all available firmware-defined button numbers and their current user-defined map.
+
+        Remarks:
+            May take a few seconds to run.
+        """
         for raw in range(64):
             map = self.get_button_map(raw)
             if map != {}:
@@ -591,6 +595,9 @@ class SimWheel:
 
         Returns:
             dict: A representation of current user settings
+
+        Remarks:
+            May take a few seconds to run.
         """
         result = {}
         if all or self.has_alt_buttons:
