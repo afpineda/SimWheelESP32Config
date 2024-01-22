@@ -29,7 +29,8 @@ if exists(".gitignore") and exists(".gitattributes"):
         f"src\\ESP32SimWheelConfig\\LICENSE.txt{os.pathsep}.",
         "-i",
         "resources\\MainIcons.ico",
-        "--hidden-import","src\\ESP32SimWheelConfig\\esp32simwheel.py"
+        "--hidden-import",
+        "src\\ESP32SimWheelConfig\\esp32simwheel.py",
     ]
     print("Launching freezer: ")
     for s in cmd:
@@ -40,5 +41,3 @@ if exists(".gitignore") and exists(".gitattributes"):
 else:
     print("ERROR: this script must run in the project root...")
     exit(-1)
-
-## Nuitka src\ESP32SimWheelConfig\__main__.py --standalone --disable-console --enable-plugin=pyqt5

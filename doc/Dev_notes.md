@@ -35,7 +35,7 @@ At the time of writing, it was not possible to freeze using "zipapp" with succes
 
 ### Delphi implementation
 
-Can be found in the "delphi" branch of this project. Currently not active but maintained.
+Can be found in the "delphi-implementation" branch of this project. Currently not active but maintained.
 However, this situation could be reverted in the future.
 This implementation works with data version 1.1, but not with previous ones.
 

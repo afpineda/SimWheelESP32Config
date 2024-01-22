@@ -272,7 +272,7 @@ buttons_map_group.bind_visibility_from(device, "has_buttons_map")
 with buttons_map_group:
     with ui.row().classes("self-center"):
         btn_map_reload = ui.button(
-            "Reload", icon="autorenew", on_click=reload_buttons_map
+            "Reload", icon="sync", on_click=reload_buttons_map
         )
         btn_map_save = ui.button("Save", icon="save", on_click=save_now)
         btn_map_defaults = ui.button(
