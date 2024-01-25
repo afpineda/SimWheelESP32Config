@@ -27,3 +27,9 @@
 - A change in the settings through the hardware itself is
   automatically reflected in the app without a explicit refresh.
 - Backwards-compatible: support for 1.0 and 1.1 data versions.
+
+## 2.0.1
+
+- License has changed to EUPL 1.2
+- Implementation now uses `appstrings` library from this author.
+- No changes in functionality, so there is no release for this version.
