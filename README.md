@@ -30,3 +30,19 @@ A companion app for [ESP32 based open-source wireless steering wheel](https://gi
 [Change log](./doc/ChangeLog.md)
 
 [Notes for software developers](./doc/Dev_notes.md)
+
+### Licensed work
+
+This project uses the following libraries under a compatible license:
+
+- ["hidapi"](https://github.com/trezor/cython-hidapi) from Gary Bishop:
+
+  Available under several licenses, including public domain.
+
+- ["nicegui"](https://nicegui.io/) from Zauberzeug GmbH:
+
+  Available under [MIT license](https://mit-license.org/).
+
+- ["appstrings"](ttps://github.com/afpineda/appstrings-python) from this author:
+
+  Available under EUPL license.

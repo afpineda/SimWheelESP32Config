@@ -1,8 +1,11 @@
 # ****************************************************************************
-#  @author Ángel Fernández Pineda. Madrid. Spain.
-#  @date 2024-01-21
-#  @brief Configuration app for ESP32-based open source sim wheels
-#  @copyright Creative Commons Attribution 4.0 International (CC BY 4.0)
+# @file esp32simwheel.py
+#
+# @author Ángel Fernández Pineda. Madrid. Spain.
+# @date 2024-01-21
+# @brief Configuration app for ESP32-based open source sim wheels
+# @copyright 2024 Ángel Fernández Pineda. Madrid. Spain.
+# @license Licensed under the EUPL
 # *****************************************************************************
 
 """

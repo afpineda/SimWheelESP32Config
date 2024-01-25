@@ -1,8 +1,11 @@
 # ****************************************************************************
-#  @author Ángel Fernández Pineda. Madrid. Spain.
-#  @date 2024-01-21
-#  @brief Configuration app for ESP32-based open source sim wheels (freezing)
-#  @copyright Creative Commons Attribution 4.0 International (CC BY 4.0)
+# @file build.py
+#
+# @author Ángel Fernández Pineda. Madrid. Spain.
+# @date 2024-01-21
+# @brief Configuration app for ESP32-based open source sim wheels
+# @copyright 2024 Ángel Fernández Pineda. Madrid. Spain.
+# @license Licensed under the EUPL
 # *****************************************************************************
 
 # -------------------------- IMPORTANT NOTE --------------------------------
@@ -23,7 +26,7 @@ if exists(".gitignore") and exists(".gitattributes"):
 
     cmd = [
         "PyInstaller",
-        "src\\ESP32SimWheelConfig\\__main__.py",  # your main file with ui.run()
+        "src/ESP32SimWheelConfig/__main__.py",  # your main file with ui.run()
         "--name",
         "ESP32SimWheel",  # name of your app
         #'--onefile',
@@ -31,11 +34,11 @@ if exists(".gitignore") and exists(".gitattributes"):
         "--add-data",
         f"{Path(nicegui.__file__).parent}{os.pathsep}nicegui",
         "--add-data",
-        f"src\\ESP32SimWheelConfig\\LICENSE.txt{os.pathsep}.",
+        f"./LICENSE{os.pathsep}.",
         "-i",
-        "resources\\MainIcons.ico",
+        "resources/MainIcons.ico",
         "--hidden-import",
-        "src\\ESP32SimWheelConfig\\esp32simwheel.py",
+        "src/ESP32SimWheelConfig/esp32simwheel.py",
     ]
     print("Launching freezer: ")
     for s in cmd:

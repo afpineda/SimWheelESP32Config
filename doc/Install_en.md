@@ -40,6 +40,7 @@ To be done only once:
   ```shell
   pip install hidapi
   pip install nicegui
+  pip install appstrings
   ```
 
 - If something goes wrong, try an older Python version.

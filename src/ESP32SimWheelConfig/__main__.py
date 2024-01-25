@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 # ****************************************************************************
-#  @author Ángel Fernández Pineda. Madrid. Spain.
-#  @date 2024-01-21
-#  @brief Configuration app for ESP32-based open source sim wheels
-#  @copyright Creative Commons Attribution 4.0 International (CC BY 4.0)
+# @file __main__.py
+#
+# @author Ángel Fernández Pineda. Madrid. Spain.
+# @date 2024-01-21
+# @brief Configuration app for ESP32-based open source sim wheels
+# @copyright 2024 Ángel Fernández Pineda. Madrid. Spain.
+# @license Licensed under the EUPL
 # *****************************************************************************
 
 print(f"ESP32SimWheelConfig --------------------------------------------")
@@ -16,93 +19,15 @@ else:
 from nicegui import ui, app, run
 import webview
 from json import dumps, loads
-from appstrings import *
+from appstrings import gettext
+from lang_en import EN
+from lang_es import ES
 
 ##################################################################################################
 
-# def _(STR.s: str):
-#     return s
-
 _ = gettext
 
-class STR(AppStrings):
-    _lang = "en"
-    ALT_BUTTONS = "ALT buttons"
-    ALT_MODE = "Alternate mode"
-    ANALOG_AXES = "Analog axes"
-    AVAILABLE_DEVICES = "Available devices"
-    AXIS = "Axis"
-    BATTERY = "Battery"
-    BITE_POINT = "Bite point"
-    BUTTON = "Button"
-    BUTTONS_MAP = "Buttons map"
-    CHECK_ID = "Check device identity"
-    CLUTCH = "Clutch"
-    CLUTCH_PADDLES = "Clutch paddles"
-    DEFAULTS = "Defaults"
-    DONE = "Done!"
-    DPAD = "Directional pad"
-    ERROR = "Error!"
-    FIRMWARE_DEFINED = "Firmware-defined"
-    INCLUDE_BTN_MAP = "Include buttons map"
-    INVALID_BTN = "Invalid button number (valid numbers are in the range 0-127)"
-    LOAD = "Load"
-    LOCAL_PROFILE = "Local profile"
-    NAV = "Navigation"
-    NO_DEVICE = "No device"
-    NO_DEVICES_FOUND = "No devices found"
-    PROFILE_CHECK_TOOLTIP = "Uncheck to load settings from another sim wheel/button box"
-    RECALIBRATE = "Recalibrate"
-    REGULAR_BUTTON =  "Regular button"
-    RELOAD = "Reload"
-    SAVE = "Save"
-    SELECT = "Select"
-    SOC = "State of charge"
-    USER_DEFINED = "User-defined"
-    USER_DEFINED_ALT = "User-defined Alt Mode"
-    WAIT = "Please, wait..."
-
-
-
-class ES(AppStrings):
-    _lang = "es"
-    ALT_BUTTONS = "Botones ALT"
-    ALT_MODE = "Modo alternativo"
-    ANALOG_AXES = "Ejes analógicos"
-    AVAILABLE_DEVICES = "Dispositivos disponibles"
-    AXIS = "Eje"
-    BATTERY = "Batería"
-    BITE_POINT = "Punto de mordida"
-    BUTTON = "Botón"
-    BUTTONS_MAP = "Mapa de botones"
-    CHECK_ID = "Comprobar identidad del dispositivo"
-    CLUTCH = "Embrague"
-    CLUTCH_PADDLES = "Paletas de embrague"
-    DEFAULTS = "Por defecto"
-    DONE = "¡Hecho!"
-    DPAD = "Cruceta direccional"
-    ERROR = "¡Error!"
-    FIRMWARE_DEFINED = "Del firmware"
-    INCLUDE_BTN_MAP = "Incluir mapa de botones"
-    INVALID_BTN = "Número de botón inválido (los válidos están en el rango 0-127)"
-    LOAD = "Cargar"
-    LOCAL_PROFILE = "Perfil local"
-    NAV = "Navegación"
-    NO_DEVICE = "Sin dispositivo"
-    NO_DEVICES_FOUND = "No se halló dispositivo alguno"
-    PROFILE_CHECK_TOOLTIP = "Desmarcar para cargar los ajustes de otro volante / caja de botones"
-    RECALIBRATE = "Recalibrar"
-    REGULAR_BUTTON =  "Botón normal"
-    RELOAD = "Recargar"
-    SAVE = "Salvar"
-    SELECT = "Seleccionar"
-    SOC = "Estado de carga"
-    USER_DEFINED = "Del usuario"
-    USER_DEFINED_ALT = "Del usuario modo ALT"
-    WAIT = "Por favor, espere..."
-
-install(STR,True)
-install(ES)
+STR = EN
 
 ##################################################################################################
 

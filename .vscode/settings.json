@@ -1,10 +1,12 @@
 {
     "cSpell.words": [
         "gamepad",
+        "hidapi",
         "nicegui"
     ],
     "cSpell.ignoreWords": [
         "aggrid",
+        "appstrings",
         "autorenew",
         "msgid",
         "msgstr",
