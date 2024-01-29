@@ -49,3 +49,7 @@ if exists(".gitignore") and exists(".gitattributes"):
 else:
     print("ERROR: this script must run in the project root...")
     exit(-1)
+
+# Reminder: to make a zip in linux
+#   cd dist
+#   zip -r -q linux ESP32SimWheel/
