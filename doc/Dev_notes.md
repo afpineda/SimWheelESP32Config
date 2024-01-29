@@ -26,6 +26,7 @@ Direct release dependencies are:
 
 - [hidapi](https://pypi.org/project/hidapi/)
 - [NiceGUI](https://pypi.org/project/nicegui/)
+- [appstrings](https://pypi.org/project/appstrings/)
 
 There is a "requirements.txt" file for all dependencies.
 
@@ -35,7 +36,8 @@ At the time of writing, it was not possible to freeze using "zipapp" with succes
 
 ### Delphi implementation
 
-Can be found in the "delphi-implementation" branch of this project. Currently not active but maintained.
+Can be found in the "delphi-implementation" branch of this project.
+Currently not active nor maintained.
 However, this situation could be reverted in the future.
 This implementation works with data version 1.1, but not with previous ones.
 
