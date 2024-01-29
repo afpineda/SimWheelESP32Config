@@ -25,7 +25,7 @@ if exists(".gitignore") and exists(".gitattributes"):
     print("--------------------------------------------------------------")
 
     cmd = [
-        "PyInstaller",
+        "pyinstaller",
         "src/ESP32SimWheelConfig/__main__.py",  # your main file with ui.run()
         "--name",
         "ESP32SimWheel",  # name of your app
