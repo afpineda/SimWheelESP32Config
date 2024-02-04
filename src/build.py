@@ -24,9 +24,14 @@ if exists(".gitignore") and exists(".gitattributes"):
     print("ESP32SimWheelConfig: freezing for distribution                ")
     print("--------------------------------------------------------------")
 
+    main_file = Path("src/ESP32SimWheelConfig/__main__.py")
+    icons_file = Path("resources/MainIcons.ico")
+    sim_wheel_api_file = Path("src/ESP32SimWheelConfig/esp32simwheel.py")
+    license_file = Path("./LICENSE")
+
     cmd = [
         "pyinstaller",
-        "src/ESP32SimWheelConfig/__main__.py",  # your main file with ui.run()
+        f"{main_file}",  # your main file with ui.run()
         "--name",
         "ESP32SimWheel",  # name of your app
         #'--onefile',
@@ -34,11 +39,11 @@ if exists(".gitignore") and exists(".gitattributes"):
         "--add-data",
         f"{Path(nicegui.__file__).parent}{os.pathsep}nicegui",
         "--add-data",
-        f"./LICENSE{os.pathsep}.",
+        f"{license_file}{os.pathsep}.",
         "-i",
-        "resources/MainIcons.ico",
+        f"{icons_file}",
         "--hidden-import",
-        "src/ESP32SimWheelConfig/esp32simwheel.py",
+        f"{sim_wheel_api_file}",
     ]
     print("Launching freezer: ")
     for s in cmd:
