@@ -25,6 +25,13 @@ A companion app for [ESP32 based open-source wireless steering wheel](https://gi
 
 [Usage notes](./doc/UsageNotes_en.md)
 
+## Known issues / Troubleshooting
+
+### User interface not showing
+
+As a workaround, open your web browser and try one of these URL: `localhost:8000` or `localhost:8080`.
+The user interface will show in your browser.
+
 ## Other
 
 [Change log](./doc/ChangeLog.md)
