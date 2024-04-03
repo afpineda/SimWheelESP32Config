@@ -8,6 +8,14 @@ For Windows 64-bits, only.
 
 - Go to the [Releases](https://github.com/afpineda/SimWheelESP32Config/releases) page
   and download the latest file named "**ESP32SimWheel-windows.zip**".
+- **IMPORTANT note** for Windows 11 users:
+  - Right-click on the ZIP file and select *Properties*
+  - At the bottom of the properties page, look for a security notice
+  - Check the "unblock" box next to it.
+
+  See [this tutorial](https://www.elevenforum.com/t/unblock-file-downloaded-from-internet-in-windows-11.1125/)
+  for detailed instructions.
+
 - Unzip to a folder of your choice.
 
 Run the executable in that folder.

@@ -32,6 +32,10 @@ A companion app for [ESP32 based open-source wireless steering wheel](https://gi
 As a workaround, open your web browser and try one of these URL: `localhost:8000` or `localhost:8080`.
 The user interface will show in your browser.
 
+If your operating system is Windows 11, this issue is caused by some kind
+of security measure for files downloaded from the Internet.
+Download the ZIP file again and follow the [installation notes](./doc/Install_en.md) carefully.
+
 ## Other
 
 [Change log](./doc/ChangeLog.md)
