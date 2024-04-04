@@ -153,6 +153,7 @@ cython_debug/
 
 # Custom
 draft/
+.vscode/launch.json
 
 # Deployment
 pyz_build/

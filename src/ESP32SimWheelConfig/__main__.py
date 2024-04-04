@@ -9,8 +9,6 @@
 # @license Licensed under the EUPL
 # *****************************************************************************
 
-print(f"ESP32SimWheelConfig --------------------------------------------")
-print(f"Running as package: {__package__}")
 if __package__:
     from . import esp32simwheel
 else:
@@ -19,9 +17,27 @@ else:
 from nicegui import ui, app, run
 import webview
 from json import dumps, loads
-from appstrings import gettext
+from appstrings import gettext, set_translation_locale
 from lang_en import EN
 from lang_es import ES
+from lang_zh import ZH
+import sys
+
+##################################################################################################
+
+print("ESP32SimWheelConfig --------------------------------------------")
+
+for arg in sys.argv:
+    arg_cf = arg.casefold()
+    if arg_cf == "en":
+        print("Language: English")
+        set_translation_locale("en")
+    if arg_cf == "es":
+        print("Language: Español")
+        set_translation_locale("es")
+    if arg_cf == "zh":
+        print("Language: 中国")
+        set_translation_locale("zh")
 
 ##################################################################################################
 
@@ -88,7 +104,7 @@ def _refresh_available_devices():
                 card.classes(add="w-full")
                 ui.label(sim_wheel.product_name).classes("text-overline")
                 ui.label(sim_wheel.manufacturer).classes("font-thin")
-                ui.label(f"{sim_wheel.deviceID:X}").classes("font-thin")
+                ui.label(f"{sim_wheel.device_id:X}").classes("font-thin")
                 ui.button(_(STR.SELECT), icon="task_alt").classes("self-center").on(
                     "click", lambda path=sim_wheel.path: select_device(path)
                 )
@@ -142,8 +158,8 @@ def buttons_group_enable(value: bool):
 
 
 def buttons_map_value_change(changes):
-    rowIndex = changes.args["rowIndex"]
-    columnKey = changes.args["colId"]
+    row_index = changes.args["rowIndex"]
+    column_key = changes.args["colId"]
     value = changes.args["value"]
     if (value < 0) or (value > 127):
         ui.notify(
@@ -152,14 +168,14 @@ def buttons_map_value_change(changes):
             multi_line=True,
         )
     else:
-        buttons_map_data[rowIndex][columnKey] = value
-        device.set_button_map_tuple(buttons_map_data[rowIndex])
+        buttons_map_data[row_index][column_key] = value
+        device.set_button_map_tuple(buttons_map_data[row_index])
         # Ensure that the new value was accepted by the device
         try:
-            map = device.get_button_map(buttons_map_data[rowIndex]["firmware"])
-            if map != {}:
-                buttons_map_data[rowIndex] = map
-        except:
+            btn_map = device.get_button_map(buttons_map_data[row_index]["firmware"])
+            if btn_map != {}:
+                buttons_map_data[row_index] = btn_map
+        except Exception:
             pass
     buttons_map_grid.update()
 
@@ -172,7 +188,7 @@ def _reload_buttons_map():
             buttons_map_data.append(map)
         print(f"Buttons map: {len(buttons_map_data)} items")
         print("Buttons map: Done!")
-    except:
+    except Exception:
         buttons_map_data.clear()
         print("Buttons map: Failed !")
 
@@ -206,7 +222,6 @@ def profile_group_enable(enabled: bool = True):
     check_profile_buttons_map.enabled = enabled
     check_profile_same_device.enabled = enabled
 
-
 def _load_profile(filename: str) -> bool:
     print(f"Loading profile from {filename}")
     try:
@@ -215,12 +230,12 @@ def _load_profile(filename: str) -> bool:
             json = f.read()
             content = loads(json)
             if check_profile_same_device.value:
-                idCheckOk = ("deviceID" in content) and (
-                    content["deviceID"] == device.deviceID
+                id_check_ok = ("deviceID" in content) and (
+                    content["deviceID"] == device.device_id
                 )
             else:
-                idCheckOk = True
-            if not idCheckOk:
+                id_check_ok = True
+            if not id_check_ok:
                 f.close()
                 return False
             if not check_profile_buttons_map.value:
@@ -229,7 +244,7 @@ def _load_profile(filename: str) -> bool:
         finally:
             f.close()
         return True
-    except:
+    except Exception:
         return False
 
 
@@ -250,7 +265,7 @@ def _save_profile(filename: str) -> bool:
     print(f"Saving profile to {filename}")
     try:
         content = device.serialize()
-        content["deviceID"] = device.deviceID
+        content["deviceID"] = device.device_id
         if not check_profile_buttons_map.value:
             content.pop("ButtonsMap", None)
         json = dumps(content)
@@ -260,7 +275,7 @@ def _save_profile(filename: str) -> bool:
         finally:
             f.close()
         return True
-    except:
+    except Exception:
         return False
 
 
@@ -290,7 +305,9 @@ with ui.header():
         headerLabel.bind_text_from(
             device,
             "is_alive",
-            backward=lambda isReady: device.product_name if isReady else _(STR.NO_DEVICE),
+            backward=lambda is_alive_value: (
+                device.product_name if is_alive_value else _(STR.NO_DEVICE)
+            ),
         )
 
 drawer = ui.left_drawer(value=False).props("behavior=desktop")

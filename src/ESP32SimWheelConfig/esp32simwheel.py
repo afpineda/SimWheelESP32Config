@@ -106,7 +106,7 @@ class SimWheel:
                 self.__is_open = True
                 if self.__is_sim_wheel == None:
                     self.__is_sim_wheel = self._check_is_sim_wheel()
-            except:
+            except Exception:
                 self.__is_open = False
 
     def _check_is_sim_wheel(self) -> bool:
@@ -120,30 +120,32 @@ class SimWheel:
             )
             # Get magic number, data version and flags
             data = struct.unpack("HHHH", raw[1:9])
-            checkFailed = data[0] != 48977  # Expected magic number
-            checkFailed = checkFailed or (data[1] != 1)  # Check major version
-            if checkFailed:
+            check_failed = data[0] != 48977  # Expected magic number
+            check_failed = check_failed or (data[1] != 1)  # Check major version
+            if check_failed:
                 return False
-            self.__dataMajorVersion = data[1]
-            self.__dataMinorVersion = data[2]
-            self._capabilityFlags = data[3]
+            self.__data_major_version = data[1]
+            self.__data_minor_version = data[2]
+            self._capability_flags = data[3]
             # At data version 1.1, get device ID
             if len(raw) >= 17:
                 data = struct.unpack("Q", raw[9:17])
-                self.deviceID = data[0]
+                self.device_id = data[0]
+            else:
+                self.device_id = 0
             # Confirm the "configuration" report is available
             self._hid.get_feature_report(_RID_CONFIG, _REPORT_SIZE_CONFIG)
             # At data version 1.1, confirm the "buttons map" report is available
-            if (self.__dataMajorVersion == 1) and (self.__dataMinorVersion >= 1):
+            if (self.__data_major_version == 1) and (self.__data_minor_version >= 1):
                 self._hid.get_feature_report(_RID_BUTTONS_MAP, _REPORT_SIZE_BUTTONS_MAP)
             return True
-        except:
+        except Exception:
             return False
 
     def _get_config_report(self):
         """Read a device configuration feature report (id #3)."""
         data = bytes(self._hid.get_feature_report(_RID_CONFIG, _REPORT_SIZE_CONFIG))
-        if self.__dataMinorVersion >= 1:
+        if self.__data_minor_version >= 1:
             return struct.unpack("BBBBB", data[1:6])
         else:
             return struct.unpack("BBBB", data[1:5])
@@ -156,7 +158,7 @@ class SimWheel:
         aux[2] = data[1]
         aux[3] = data[2]
         aux[4] = data[3]
-        if self.__dataMajorVersion >= 1:
+        if self.__data_major_version >= 1:
             aux[5] = data[4]
             self._hid.send_feature_report(aux)
         else:
@@ -164,7 +166,7 @@ class SimWheel:
 
     def _get_buttons_map_report(self):
         """Read a buttons map feature report (id #4)."""
-        if self.__dataMinorVersion >= 1:
+        if self.__data_minor_version >= 1:
             data = bytes(
                 self._hid.get_feature_report(_RID_BUTTONS_MAP, _REPORT_SIZE_BUTTONS_MAP)
             )
@@ -190,7 +192,7 @@ class SimWheel:
         """Close HID connection."""
         try:
             self._hid.close()
-        except:
+        except Exception:
             pass
         self.__is_open = False
 
@@ -200,7 +202,7 @@ class SimWheel:
         self._open()
         try:
             self._get_config_report()
-        except:
+        except Exception:
             self.close()
         return self.__is_open
 
@@ -214,7 +216,7 @@ class SimWheel:
     def has_buttons_map(self) -> bool:
         """Returns True if this device supports user-defined button maps."""
         if self._is_ready():
-            return self.__dataMinorVersion >= 1
+            return self.__data_minor_version >= 1
         else:
             return False
 
@@ -224,7 +226,7 @@ class SimWheel:
         if self._is_ready():
             return bool(
                 ((1 << _CAP_CLUTCH_ANALOG) | (1 << _CAP_CLUTCH_BUTTON))
-                & self._capabilityFlags
+                & self._capability_flags
             )
         else:
             return False
@@ -233,7 +235,7 @@ class SimWheel:
     def has_analog_clutch_paddles(self) -> bool:
         """Returns True if this device has analog clutch paddles."""
         if self._is_ready():
-            return bool((1 << _CAP_CLUTCH_ANALOG) & self._capabilityFlags)
+            return bool((1 << _CAP_CLUTCH_ANALOG) & self._capability_flags)
         else:
             return False
 
@@ -241,7 +243,7 @@ class SimWheel:
     def has_dpad(self) -> bool:
         """Returns True if this device has navigational controls."""
         if self._is_ready():
-            return bool((1 << _CAP_DPAD) & self._capabilityFlags)
+            return bool((1 << _CAP_DPAD) & self._capability_flags)
         else:
             return False
 
@@ -249,7 +251,7 @@ class SimWheel:
     def has_alt_buttons(self) -> bool:
         """Returns True if this device has ALT buttons."""
         if self._is_ready():
-            return bool((1 << _CAP_ALT) & self._capabilityFlags)
+            return bool((1 << _CAP_ALT) & self._capability_flags)
         else:
             return False
 
@@ -257,7 +259,7 @@ class SimWheel:
     def has_battery(self) -> bool:
         """Returns True if this device is powered by batteries."""
         if self._is_ready():
-            return bool((1 << _CAP_BATTERY) & self._capabilityFlags)
+            return bool((1 << _CAP_BATTERY) & self._capability_flags)
         else:
             return False
 
@@ -266,7 +268,7 @@ class SimWheel:
         """Returns True if this device is able to auto-calibrate battery's state of charge."""
         if self._is_ready():
             return bool(
-                (1 << _CAP_BATTERY_CALIBRATION_AVAILABLE) & self._capabilityFlags
+                (1 << _CAP_BATTERY_CALIBRATION_AVAILABLE) & self._capability_flags
             )
         else:
             return False
@@ -278,24 +280,24 @@ class SimWheel:
             try:
                 report = self._get_config_report()
                 return report[3]
-            except:
+            except Exception:
                 self.close()
         else:
             return 100
 
     @property
-    def dataMajorVersion(self) -> int:
+    def data_major_version(self) -> int:
         """Major version of the data interchange specification supported by this device."""
         if self._is_ready():
-            return self.__dataMajorVersion
+            return self.__data_major_version
         else:
             return 0
 
     @property
-    def dataMinorVersion(self) -> int:
+    def data_minor_version(self) -> int:
         """Minor version of the data interchange specification supported by this device."""
         if self._is_ready():
-            return self.__dataMinorVersion
+            return self.__data_minor_version
         else:
             return 0
 
@@ -310,7 +312,7 @@ class SimWheel:
             try:
                 report = self._get_config_report()
                 return ClutchPaddlesWorkingMode(report[0])
-            except:
+            except Exception:
                 self.close()
                 return ClutchPaddlesWorkingMode.CLUTCH
 
@@ -322,8 +324,8 @@ class SimWheel:
         """
         if self._is_ready():
             try:
-                self._send_config_report((int(mode), 0xFF, 0xFF, 0xFF, 0xFF))
-            except:
+                self._send_config_report(bytes([int(mode), 0xFF, 0xFF, 0xFF, 0xFF]))
+            except Exception:
                 self.close()
 
     @property
@@ -338,7 +340,7 @@ class SimWheel:
             try:
                 report = self._get_config_report()
                 return bool(report[1])
-            except:
+            except Exception:
                 self.close()
 
     @alt_buttons_working_mode.setter
@@ -349,8 +351,8 @@ class SimWheel:
         """
         if self._is_ready():
             try:
-                self._send_config_report((0xFF, int(mode), 0xFF, 0xFF, 0xFF))
-            except:
+                self._send_config_report(bytes([0xFF, int(mode), 0xFF, 0xFF, 0xFF]))
+            except Exception:
                 self.close()
 
     @property
@@ -364,7 +366,7 @@ class SimWheel:
             try:
                 report = self._get_config_report()
                 return report[2]
-            except:
+            except Exception:
                 self.close()
 
     @bite_point.setter
@@ -377,8 +379,8 @@ class SimWheel:
             raise ValueError("Bite point not in the range 0..254")
         if self._is_ready():
             try:
-                self._send_config_report((0xFF, 0xFF, value, 0xFF, 0xFF))
-            except:
+                self._send_config_report(bytes([0xFF, 0xFF, value, 0xFF, 0xFF]))
+            except Exception:
                 self.close()
 
     @property
@@ -393,7 +395,7 @@ class SimWheel:
             try:
                 report = self._get_config_report()
                 return bool(report[4])
-            except:
+            except Exception:
                 self.close()
         else:
             return False
@@ -406,8 +408,8 @@ class SimWheel:
         """
         if self._is_ready():
             try:
-                self._send_config_report((0xFF, 0xFF, 0xFF, 0xFF, int(mode)))
-            except:
+                self._send_config_report(bytes([0xFF, 0xFF, 0xFF, 0xFF, int(mode)]))
+            except Exception:
                 self.close()
 
     @property
@@ -444,16 +446,16 @@ class SimWheel:
         """Force auto-calibration of analog clutch paddles (if available)."""
         if self._is_ready():
             try:
-                self._send_config_report((0xFF, 0xFF, 0xFF, 1, 0xFF))
-            except:
+                self._send_config_report(bytes([0xFF, 0xFF, 0xFF, 1, 0xFF]))
+            except Exception:
                 self.close()
 
     def recalibrate_battery(self):
         """Force auto-calibration of battery's state of charge (if available)."""
         if self._is_ready():
             try:
-                self._send_config_report((0xFF, 0xFF, 0xFF, 2, 0xFF))
-            except:
+                self._send_config_report(bytes([0xFF, 0xFF, 0xFF, 2, 0xFF]))
+            except Exception:
                 self.close()
 
     def reset_buttons_map(self):
@@ -463,24 +465,24 @@ class SimWheel:
         """
         if self._is_ready():
             try:
-                self._send_config_report((0xFF, 0xFF, 0xFF, 3, 0xFF))
-            except:
+                self._send_config_report(bytes([0xFF, 0xFF, 0xFF, 3, 0xFF]))
+            except Exception:
                 self.close()
 
     def save_now(self):
         """Save all user settings to the device's internal flash memory."""
         if self._is_ready():
             try:
-                self._send_config_report((0xFF, 0xFF, 0xFF, 4, 0xFF))
-            except:
+                self._send_config_report(bytes([0xFF, 0xFF, 0xFF, 4, 0xFF]))
+            except Exception:
                 self.close()
 
-    def get_button_map(self, rawInputNumber: int):
+    def get_button_map(self, raw_input_number: int):
         """Returns a user-defined button mapping.
 
         Parameters:
 
-            rawInputNumber : A firmware-defined button number in the range from 0 to 63, inclusive.
+            raw_input_number : A firmware-defined button number in the range from 0 to 63, inclusive.
 
         Returns an empty dictionary if the requested button number does not exist.
         Otherwise, returns a dictionary with the following keys:
@@ -493,19 +495,19 @@ class SimWheel:
         Raises AnotherAppInterferesError if another application is trying to do the same thing.
         The user should try later in such a case.
         """
-        if (rawInputNumber < 0) or (rawInputNumber >= 64):
+        if (raw_input_number < 0) or (raw_input_number >= 64):
             raise ValueError("rawInputNumber not in the range 0..63")
         if self._is_ready():
-            if self.__dataMinorVersion == 0:
+            if self.__data_minor_version == 0:
                 return {}
             try:
-                self._send_buttons_map_report((rawInputNumber, 0xFF, 0xFF))
+                self._send_buttons_map_report(bytes([raw_input_number, 0xFF, 0xFF]))
                 report = self._get_buttons_map_report()
-            except:
+            except Exception:
                 self.close()
                 return {}
 
-            if report[0] != rawInputNumber:
+            if report[0] != raw_input_number:
                 raise AnotherAppInterferesError("Try later")
             elif (
                 (report[1] >= 0)
@@ -521,44 +523,44 @@ class SimWheel:
         return {}
 
     def set_button_map(
-        self, rawInputNumber: int, userInputNumber: int, userInputNumberAltMode: int
+        self, raw_input_number: int, user_input_number: int, user_input_number_alt_mode: int
     ):
         """Sets an user-defined button mapping"""
-        if (rawInputNumber < 0) or (rawInputNumber >= 64):
-            raise ValueError("rawInputNumber not in the range 0..63")
-        if (userInputNumber < 0) or (userInputNumber >= 128):
-            raise ValueError("userInputNumber not in the range 0..127")
-        if (userInputNumberAltMode < 0) or (userInputNumberAltMode >= 128):
-            raise ValueError("userInputNumberAltMode not in the range 0..127")
+        if (raw_input_number < 0) or (raw_input_number >= 64):
+            raise ValueError("raw_input_number not in the range 0..63")
+        if (user_input_number < 0) or (user_input_number >= 128):
+            raise ValueError("user_input_number not in the range 0..127")
+        if (user_input_number_alt_mode < 0) or (user_input_number_alt_mode >= 128):
+            raise ValueError("user_input_number_alt_mode not in the range 0..127")
         if self._is_ready():
             try:
                 self._send_buttons_map_report(
-                    (rawInputNumber, userInputNumber, userInputNumberAltMode)
+                    bytes([raw_input_number, user_input_number, user_input_number_alt_mode])
                 )
-            except:
+            except Exception:
                 self.close()
 
-    def set_button_map_tuple(self, tupleOrListOrDict):
+    def set_button_map_tuple(self, tuple_or_list_or_dict):
         """Sets an user-defined button mapping
 
         Args:
-            tupleOrListOrDict (tuple/list/dict): User-defined button mapping as described below.
+            tuple_or_list_or_dict (tuple/list/dict): User-defined button mapping as described below.
 
         Three items are expected in the given argument:
             Index 0 or key \"firmware\": A firmware-defined button number in the range from 0 to 63, inclusive.
             Index 1 or key \"user\": An user-defined button number in the range from 0 to 127, inclusive.
             Index 2 or key \"userAltMode\": the same as index 1, but for alternate mode.
         """
-        if (type(tupleOrListOrDict) == tuple) or (type(tupleOrListOrDict) == list):
-            if len(tupleOrListOrDict) == 3:
+        if isinstance(tuple_or_list_or_dict,(tuple,list)):
+            if len(tuple_or_list_or_dict) == 3:
                 self.set_button_map(
-                    tupleOrListOrDict[0], tupleOrListOrDict[1], tupleOrListOrDict[2]
+                    tuple_or_list_or_dict[0], tuple_or_list_or_dict[1], tuple_or_list_or_dict[2]
                 )
-        elif type(tupleOrListOrDict) == dict:
+        elif isinstance(tuple_or_list_or_dict,dict):
             self.set_button_map(
-                tupleOrListOrDict["firmware"],
-                tupleOrListOrDict["user"],
-                tupleOrListOrDict["userAltMode"],
+                tuple_or_list_or_dict["firmware"],
+                tuple_or_list_or_dict["user"],
+                tuple_or_list_or_dict["userAltMode"],
             )
 
     def enumerate_buttons_map(self):
@@ -568,9 +570,9 @@ class SimWheel:
             May take a few seconds to run.
         """
         for raw in range(64):
-            map = self.get_button_map(raw)
-            if map != {}:
-                yield map
+            btn_map = self.get_button_map(raw)
+            if btn_map != {}:
+                yield btn_map
 
     @property
     def is_user_configurable(self):
@@ -584,7 +586,7 @@ class SimWheel:
                     | (1 << _CAP_BATTERY_CALIBRATION_AVAILABLE)
                     | (1 << _CAP_DPAD)
                 )
-                & self._capabilityFlags
+                & self._capability_flags
             )
         else:
             return False
@@ -612,7 +614,7 @@ class SimWheel:
         if self.has_buttons_map:
             try:
                 result["ButtonsMap"] = list(self.enumerate_buttons_map())
-            except:
+            except Exception:
                 pass
         elif all:
             result["ButtonsMap"] = [
@@ -641,7 +643,7 @@ class SimWheel:
             self.bite_point = source["Clutch"][1]
         if "ButtonsMap" in source:
             buttons_map = source["ButtonsMap"]
-            if type(buttons_map) == list:
+            if isinstance(buttons_map,list):
                 for m in buttons_map:
                     self.set_button_map_tuple(m)
 
@@ -649,11 +651,11 @@ class SimWheel:
 ###############################################################################
 
 
-def enumerate(configurableOnly: bool = True):
+def enumerate(configurable_only: bool = True):
     """Retrieve all connected ESP32 open-source sim wheels or button boxes.
 
     Args:
-        configurableOnly (bool, optional):
+        configurable_only (bool, optional):
         if True, devices with no user-configurable settings will be ignored.
         Defaults to True.
 
@@ -664,22 +666,22 @@ def enumerate(configurableOnly: bool = True):
         usage_page = device_dict["usage_page"]
         page = device_dict["usage"]
         if (usage_page == 1) and (page == _CONTROLLER_TYPE):
-            aWheel = SimWheel(device_dict["path"])
-            test = aWheel.is_sim_wheel and (
-                (not configurableOnly) or aWheel.is_user_configurable
+            a_wheel = SimWheel(device_dict["path"])
+            test = a_wheel.is_sim_wheel and (
+                (not configurable_only) or a_wheel.is_user_configurable
             )
             if test:
-                yield aWheel
+                yield a_wheel
 
 
 ###############################################################################
 
 if __name__ == "__main__":
-    for sim_wheel in enumerate(configurableOnly=False):
+    for sim_wheel in enumerate(configurable_only=False):
         print("***********************************************************")
         print(f"Path: {sim_wheel.path}")
         print(f"Manufacturer: {sim_wheel.manufacturer}")
         print(f"Product: {sim_wheel.product_name}")
-        print(f"Device ID: {sim_wheel.deviceID}")
+        print(f"Device ID: {sim_wheel.device_id}")
         print("Please, wait while loading user settings...")
         print(sim_wheel.serialize(includeButtonsMap=True))

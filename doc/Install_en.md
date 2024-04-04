@@ -34,7 +34,6 @@ For Linux 64-bits, only. **Not tested**: please report issues at the [project pa
   rules directory.
   Also you might need to call `udevadm control --reload-rules` to reload the rules."*
 
-
 Run the executable in that folder.
 
 ## Running from source code
@@ -78,3 +77,27 @@ python <path_to_your_folder>/src/ESP32SimWheelConfig/__main__.py
 ```
 
 You may want to put that command in a shell script.
+
+## Forcing a specific user language
+
+User language is automatically detected from your operating system environment.
+However, you may run the application in a specific user language just by passing
+the language code as a command-line argument. For example:
+
+```shell
+ESP32SimWheel es
+```
+
+or
+
+```shell
+python <path_to_your_folder>/src/ESP32SimWheelConfig/__main__.py es
+```
+
+Available language codes are:
+
+| Code | Language          |
+| ---- | ----------------- |
+| en   | English           |
+| es   | Spanish (Español) |
+| zh   | Chinese (中国)    |
