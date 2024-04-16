@@ -33,3 +33,9 @@
 - License has changed to EUPL 1.2
 - Implementation now uses `appstrings` library from this author.
 - No changes in functionality, so there is no release for this version.
+
+## 2.1.0
+
+- Added Chinese language.
+- Added command-line parameter to force any available user language.
+- Code revision with SonarLint.

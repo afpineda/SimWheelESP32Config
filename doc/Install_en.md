@@ -7,7 +7,7 @@ There are some choices as described below.
 For Windows 64-bits, only.
 
 - Go to the [Releases](https://github.com/afpineda/SimWheelESP32Config/releases) page
-  and download the latest file named "**ESP32SimWheel-windows.zip**".
+  and download the latest file named "**ESP32SimWheel-windows.zip**" (or similar).
 - **IMPORTANT note** for Windows 11 users:
   - Right-click on the ZIP file and select *Properties*
   - At the bottom of the properties page, look for a security notice
@@ -17,22 +17,6 @@ For Windows 64-bits, only.
   for detailed instructions.
 
 - Unzip to a folder of your choice.
-
-Run the executable in that folder.
-
-## Linux bundle
-
-For Linux 64-bits, only. **Not tested**: please report issues at the [project page](https://github.com/afpineda/SimWheelESP32Config/issues)
-
-- Go to the [Releases](https://github.com/afpineda/SimWheelESP32Config/releases) page
-  and download the latest file named "**ESP32SimWheel-linux.zip**".
-  If you can't find this file, come later. It takes some time to build and upload this package.
-- Unzip to a folder of your choice.
-- As stated in the [hidapi page](https://github.com/trezor/cython-hidapi?tab=readme-ov-file#udev-rules):
-  *"For correct functionality under Linux, you need to create a rule file similar
-  to this one in your [udev](https://raw.githubusercontent.com/trezor/trezor-common/master/udev/51-trezor.rules)
-  rules directory.
-  Also you might need to call `udevadm control --reload-rules` to reload the rules."*
 
 Run the executable in that folder.
 
@@ -47,6 +31,8 @@ To be done only once:
 - Ensure the python interpreter can be found in your "PATH" environment variable.
   If you have several Python versions installed, ensure the proper one is found first
   in the "PATH" environment variable.
+  Alternatively, you may configure a [virtual environment](https://realpython.com/python-virtual-environments-a-primer/)
+  ("venv" or "conda") in the installation folder.
 - Go to the [Releases](https://github.com/afpineda/SimWheelESP32Config/releases) page
   and download the latest **source code** (in ZIP format).
 - Unzip to a folder of your choice.

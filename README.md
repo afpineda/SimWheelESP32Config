@@ -18,7 +18,7 @@ A companion app for [ESP32 based open-source wireless steering wheel](https://gi
 - UI languages (automatically detected):
   - English (default)
   - Español (Spanish)
-  - Chinese (中国)
+  - 中国 (Chinese)
 
 ## User documentation
 

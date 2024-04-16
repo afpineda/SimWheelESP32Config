@@ -36,7 +36,7 @@ for arg in sys.argv:
         print("Language: Español")
         set_translation_locale("es")
     if arg_cf == "zh":
-        print("Language: 中国")
+        print("Language: Chinese")
         set_translation_locale("zh")
 
 ##################################################################################################
