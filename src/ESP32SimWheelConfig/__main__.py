@@ -19,8 +19,8 @@ import webview
 from json import dumps, loads
 from appstrings import gettext, set_translation_locale
 from lang_en import EN
-from lang_es import ES
-from lang_zh import ZH
+from lang_es import ES #NOSONAR
+from lang_zh import ZH #NOSONAR
 import sys
 
 ##################################################################################################

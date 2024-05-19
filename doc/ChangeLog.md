@@ -39,3 +39,9 @@
 - Added Chinese language.
 - Added command-line parameter to force any available user language.
 - Code revision with SonarLint.
+
+## 2.1.1
+
+- Rebuild due to a [bug](https://github.com/afpineda/appstrings-python/issues/1) in library "appstrings".
+  Thanks to user [Aalexz](https://github.com/Aalexz).No new functionalities.
+- Minor changes for [SonarLint](https://docs.sonarsource.com/sonarlint/vs-code/) compliance.

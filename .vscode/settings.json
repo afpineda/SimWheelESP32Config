@@ -2,9 +2,11 @@
     "cSpell.words": [
         "gamepad",
         "hidapi",
-        "nicegui"
+        "nicegui",
+        "Recalibrar"
     ],
     "cSpell.ignoreWords": [
+        "NOSONAR",
         "aggrid",
         "appstrings",
         "autorenew",
