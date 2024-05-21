@@ -45,3 +45,9 @@
 - Rebuild due to a [bug](https://github.com/afpineda/appstrings-python/issues/1) in library "appstrings".
   Thanks to user [Aalexz](https://github.com/Aalexz).No new functionalities.
 - Minor changes for [SonarLint](https://docs.sonarsource.com/sonarlint/vs-code/) compliance.
+
+## 2.1.2
+
+- Fixed bug which caused an app crash at startup when using certain character encodings in the text terminal
+  (used for logging purposes). No new functionalities.
+- Fixed incomplete installation instructions for Linux users.
