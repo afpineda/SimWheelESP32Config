@@ -54,7 +54,13 @@ To be done only once:
   ```
 
 - If something goes wrong, try an older Python version.
-- Linux users: follow notes for the Linux bundle above.
+- Note for **Linux** users:
+
+  As stated in the [hidapi page](https://github.com/trezor/cython-hidapi?tab=readme-ov-file#udev-rules):
+  *"For correct functionality under Linux, you need to create a rule file similar
+  to this one in your [udev](https://raw.githubusercontent.com/trezor/trezor-common/master/udev/51-trezor.rules)
+  rules directory.
+  Also you might need to call `udevadm control --reload-rules` to reload the rules."*
 
 In order to run the application, type:
 
@@ -63,6 +69,7 @@ python <path_to_your_folder>/src/ESP32SimWheelConfig/__main__.py
 ```
 
 You may want to put that command in a shell script.
+If you configured a virtual (python) environment, don't forget to activate it previously.
 
 ## Forcing a specific user language
 
