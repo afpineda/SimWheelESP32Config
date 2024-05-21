@@ -23,6 +23,8 @@ from lang_es import ES #NOSONAR
 from lang_zh import ZH #NOSONAR
 import sys
 
+## NOTE: Must avoid non-ASCII characters at print()
+
 ##################################################################################################
 
 print("ESP32SimWheelConfig --------------------------------------------")
@@ -125,7 +127,6 @@ async def refresh_available_devices():
 def select_device(path: str):
     device.path = path
     print(f"Selecting {device.path}")
-    print(f"Product name: {device.product_name}")
     drawer.toggle()
 
 
@@ -223,7 +224,7 @@ def profile_group_enable(enabled: bool = True):
     check_profile_same_device.enabled = enabled
 
 def _load_profile(filename: str) -> bool:
-    print(f"Loading profile from {filename}")
+    print("Loading profile from file")
     try:
         f = open(filename, "r", encoding="utf-8")
         try:
@@ -262,7 +263,7 @@ async def load_profile():
 
 
 def _save_profile(filename: str) -> bool:
-    print(f"Saving profile to {filename}")
+    print("Saving profile to file")
     try:
         content = device.serialize()
         content["deviceID"] = device.device_id
