@@ -462,6 +462,18 @@ class SimWheel:
         else:
             return ""
 
+    @property
+    def is_read_only(self) -> bool:
+        """Security lock on this device."""
+        if (self.__data_minor_version >= 2) and self._is_ready():
+            # Get "capabilities" report (ID #2)
+            report2 = bytes(
+                self._hid.get_feature_report(_RID_CAPABILITIES, _MAX_REPORT_SIZE)
+            )
+            return report2[17] != 0
+        else:
+            return False
+
     def recalibrate_analog_axes(self):
         """Force auto-calibration of analog clutch paddles (if available)."""
         if self._is_ready():

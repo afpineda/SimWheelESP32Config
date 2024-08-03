@@ -19,8 +19,8 @@ import webview
 from json import dumps, loads
 from appstrings import gettext, set_translation_locale
 from lang_en import EN
-from lang_es import ES #NOSONAR
-from lang_zh import ZH #NOSONAR
+from lang_es import ES  # NOSONAR
+from lang_zh import ZH  # NOSONAR
 import sys
 
 ## NOTE: Must avoid non-ASCII characters at print()
@@ -223,6 +223,7 @@ def profile_group_enable(enabled: bool = True):
     check_profile_buttons_map.enabled = enabled
     check_profile_same_device.enabled = enabled
 
+
 def _load_profile(filename: str) -> bool:
     print("Loading profile from file")
     try:
@@ -322,6 +323,10 @@ with drawer:
         )
     ui.separator()
     available_devices_ph = ui.column().classes("w-full justify-center")
+
+read_only_notice = ui.label(_(STR.READ_ONLY_NOTICE))
+read_only_notice.classes("self-center").tailwind.font_size("lg").text_color("red-600")
+read_only_notice.bind_visibility_from(device, "is_read_only")
 
 alt_buttons_group = ui.expansion(_(STR.ALT_BUTTONS), value=True, icon="touch_app")
 alt_buttons_group.classes("text-h6")

@@ -48,5 +48,6 @@ class ZH(Enum):
     USER_DEFINED = "用户自定义"
     USER_DEFINED_ALT = "用户自定义 Alt 模式"
     WAIT = "请稍候..."
+    READ_ONLY_NOTICE = "安全锁。设备是只读的。"
 
 install(ZH)

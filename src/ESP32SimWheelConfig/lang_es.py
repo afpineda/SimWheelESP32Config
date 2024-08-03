@@ -48,5 +48,6 @@ class ES(Enum):
     USER_DEFINED = "Del usuario"
     USER_DEFINED_ALT = "Del usuario modo ALT"
     WAIT = "Por favor, espere..."
+    READ_ONLY_NOTICE = "Bloqueo de seguridad. Sólo lectura."
 
 install(ES)

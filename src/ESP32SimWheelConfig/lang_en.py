@@ -48,5 +48,6 @@ class EN(Enum):
     USER_DEFINED = "User-defined"
     USER_DEFINED_ALT = "User-defined Alt Mode"
     WAIT = "Please, wait..."
+    READ_ONLY_NOTICE = "Security lock. Device is read-only."
 
 install(EN)
