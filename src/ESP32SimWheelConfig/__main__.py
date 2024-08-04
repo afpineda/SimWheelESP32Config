@@ -81,6 +81,23 @@ __buttons_map_columns = [
 ]
 
 
+def get_16bit_value(value_as_string: str) -> int | None:
+    try:
+        v = int(value_as_string)
+    except Exception:
+        try:
+            v = int(value_as_string, 16)
+        except Exception:
+            return None
+    if (v > 0) and (v <= 0xFFFF):
+        return v
+    else:
+        return None
+
+
+def hardware_id_validate(value: str) -> bool:
+    return get_16bit_value(value)!=None
+
 def please_wait():
     notification = ui.notification(timeout=None)
     notification.message = _(STR.WAIT)
@@ -296,6 +313,30 @@ async def save_profile():
         notify_done(done)
 
 
+def on_update_hardware_id():
+    custom_vid_input.value = device.custom_vid
+    custom_pid_input.value = device.custom_pid
+
+
+async def hardware_id_factory_defaults():
+    try:
+        device.reset_custom_hardware_id()
+        on_update_hardware_id()
+        notify_done()
+    except Exception:
+        notify_done(False)
+
+async def hardware_id_set():
+    try:
+        vid = get_16bit_value(custom_vid_input.value)
+        pid = get_16bit_value(custom_pid_input.value)
+        device.set_custom_hardware_id(vid,pid)
+        on_update_hardware_id()
+        notify_done()
+    except Exception:
+        notify_done(False)
+
+
 ##################################################################################################
 
 with ui.header():
@@ -436,6 +477,43 @@ with profile_group:
         btn_save_profile = ui.button(
             _(STR.SAVE), icon="file_download", on_click=save_profile
         )
+
+hardware_id_group = ui.expansion(_(STR.CUSTOM_HARDWARE_ID), value=False, icon="fingerprint")
+hardware_id_group.classes("text-h6")
+hardware_id_group.tailwind.font_weight("bold")
+hardware_id_group.bind_visibility_from(device, "has_custom_hw_id")
+with hardware_id_group:
+    read_only_notice = (
+        ui.label(_(STR.DANGER_ZONE))
+        .classes("self-center")
+        .tailwind.font_size("lg")
+        .text_color("red-600")
+    )
+    check_not_an_asshole = ui.checkbox(_(STR.I_AM_NOT_AN_ASSHOLE), value=False)
+    check_not_an_asshole.style("font-size: 50%")
+    check_not_an_asshole.on("update:model-value", on_update_hardware_id)
+    with ui.row().classes("self-center"):
+        custom_vid_input = ui.input(
+            label="Custom vendor ID",
+            placeholder="16-bit unsigned integer",
+            validation={"Invalid": hardware_id_validate},
+        )
+        custom_vid_input.bind_enabled_from(check_not_an_asshole, "value")
+        custom_pid_input = ui.input(
+            label="Custom product ID",
+            placeholder="16-bit unsigned integer",
+            validation={"Invalid": hardware_id_validate},
+        )
+        custom_pid_input.bind_enabled_from(check_not_an_asshole, "value")
+    with ui.row().classes("self-center"):
+        btn_hardware_id_update = ui.button(
+            _(STR.SAVE), icon="file_download", on_click=hardware_id_set
+        )
+        btn_hardware_id_update.bind_enabled_from(check_not_an_asshole, "value")
+        btn_hardware_id_defaults = ui.button(
+            _(STR.DEFAULTS), icon="factory", on_click=hardware_id_factory_defaults
+        )
+        btn_hardware_id_defaults.bind_enabled_from(check_not_an_asshole, "value")
 
 ##################################################################################################
 

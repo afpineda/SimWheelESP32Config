@@ -11,6 +11,7 @@
 from enum import Enum
 from appstrings import install
 
+
 class ES(Enum):
     _lang = "es"
     _domain = "ESP32SimWheelConfig"
@@ -38,9 +39,11 @@ class ES(Enum):
     NAV = "Navegación"
     NO_DEVICE = "Sin dispositivo"
     NO_DEVICES_FOUND = "No se halló dispositivo alguno"
-    PROFILE_CHECK_TOOLTIP = "Desmarcar para cargar los ajustes de otro volante / caja de botones"
+    PROFILE_CHECK_TOOLTIP = (
+        "Desmarcar para cargar los ajustes de otro volante / caja de botones"
+    )
     RECALIBRATE = "Recalibrar"
-    REGULAR_BUTTON =  "Botón normal"
+    REGULAR_BUTTON = "Botón normal"
     RELOAD = "Recargar"
     SAVE = "Salvar"
     SELECT = "Seleccionar"
@@ -49,5 +52,8 @@ class ES(Enum):
     USER_DEFINED_ALT = "Del usuario modo ALT"
     WAIT = "Por favor, espere..."
     READ_ONLY_NOTICE = "Bloqueo de seguridad. Sólo lectura."
+    DANGER_ZONE = "Zona de peligro"
+    CUSTOM_HARDWARE_ID = "ID a medida"
+    I_AM_NOT_AN_ASSHOLE = "Sé lo que hago"
 
 install(ES)

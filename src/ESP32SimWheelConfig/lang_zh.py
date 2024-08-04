@@ -11,6 +11,7 @@
 from enum import Enum
 from appstrings import install
 
+
 class ZH(Enum):
     _lang = "zh"
     _domain = "ESP32SimWheelConfig"
@@ -40,7 +41,7 @@ class ZH(Enum):
     NO_DEVICES_FOUND = "未找到设备"
     PROFILE_CHECK_TOOLTIP = "取消选中可从另一个模拟滚轮或按钮盒加载设置"
     RECALIBRATE = "重新校准"
-    REGULAR_BUTTON =  "常规按钮"
+    REGULAR_BUTTON = "常规按钮"
     RELOAD = "重新加载"
     SAVE = "节省"
     SELECT = "选择"
@@ -49,5 +50,8 @@ class ZH(Enum):
     USER_DEFINED_ALT = "用户自定义 Alt 模式"
     WAIT = "请稍候..."
     READ_ONLY_NOTICE = "安全锁。设备是只读的。"
+    DANGER_ZONE = "危险区域"
+    CUSTOM_HARDWARE_ID = "自定义硬件 ID"
+    I_AM_NOT_AN_ASSHOLE = "我知道我在做什么"
 
 install(ZH)

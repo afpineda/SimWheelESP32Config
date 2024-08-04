@@ -11,6 +11,7 @@
 from enum import Enum
 from appstrings import install
 
+
 class EN(Enum):
     _lang = "en"
     _domain = "ESP32SimWheelConfig"
@@ -40,7 +41,7 @@ class EN(Enum):
     NO_DEVICES_FOUND = "No devices found"
     PROFILE_CHECK_TOOLTIP = "Uncheck to load settings from another sim wheel/button box"
     RECALIBRATE = "Recalibrate"
-    REGULAR_BUTTON =  "Regular button"
+    REGULAR_BUTTON = "Regular button"
     RELOAD = "Reload"
     SAVE = "Save"
     SELECT = "Select"
@@ -49,5 +50,10 @@ class EN(Enum):
     USER_DEFINED_ALT = "User-defined Alt Mode"
     WAIT = "Please, wait..."
     READ_ONLY_NOTICE = "Security lock. Device is read-only."
+    DANGER_ZONE = "Danger zoner"
+    CUSTOM_HARDWARE_ID = "Custom hardware ID"
+    I_AM_NOT_AN_ASSHOLE = "I know what I am doing"
+
+
 
 install(EN)

@@ -40,10 +40,14 @@ _CONTROLLER_TYPE = 5
 _RID_CAPABILITIES = 2
 _RID_CONFIG = 3
 _RID_BUTTONS_MAP = 4
+_RID_HARDWARE_ID = 5
 
-_REPORT_SIZE_CAPABILITIES = 18
-_REPORT_SIZE_CONFIG = 10
-_REPORT_SIZE_BUTTONS_MAP = 4
+# Note: must increase data size in 1 to make room for the report-ID field
+
+_REPORT_SIZE_CAPABILITIES = 16 + 1
+_REPORT_SIZE_CONFIG = 6 + 1
+_REPORT_SIZE_BUTTONS_MAP = 3 + 1
+_REPORT_SIZE_HARDWARE_ID = 6 + 1
 _MAX_REPORT_SIZE = 25
 
 _CAP_CLUTCH_BUTTON = 0  # has digital clutch paddles (switches)
@@ -92,6 +96,9 @@ class SimWheel:
         self.__path = path
         self.__is_open = False
         self.__is_sim_wheel = None
+        self.__data_minor_version = None
+        self.__data_major_version = None
+        self._capability_flags = 0
 
     def __del__(self):
         self.close()
@@ -110,13 +117,16 @@ class SimWheel:
             except Exception:
                 self.__is_open = False
 
-    def _check_is_sim_wheel(self) -> bool:
-        """Determine if this device is an ESP32 open-source sim wheel or not."""
+    # noinspection python:S3776
+    def _check_is_sim_wheel(self) -> bool:  # NOSONAR
+        """Determine if this device is a supported ESP32 open-source sim wheel or not."""
+        # Supported data versions: 1.0, 1.1, 1.2
         try:
             # Get "capabilities" report (ID #2)
             report2 = bytes(
                 self._hid.get_feature_report(_RID_CAPABILITIES, _MAX_REPORT_SIZE)
             )
+
             # Get magic number, data version and flags
             data = struct.unpack("<HHHH", report2[1:9])
             check_failed = data[0] != 48977  # Expected magic number
@@ -127,6 +137,11 @@ class SimWheel:
             self.__data_major_version = data[1]
             self.__data_minor_version = data[2]
             self._capability_flags = data[3]
+
+            # Reject unsupported (future) versions
+            if (self.__data_major_version != 1) or (self.__data_minor_version > 2):
+                return False
+
             # At data version 1.1, get device ID
             if len(report2) >= 17:
                 data = struct.unpack("<Q", report2[9:17])
@@ -135,9 +150,22 @@ class SimWheel:
                 self.device_id = 0
             # Confirm the "configuration" report is available
             self._hid.get_feature_report(_RID_CONFIG, _MAX_REPORT_SIZE)
-            # At data version 1.1, confirm the "buttons map" report is available
+
+            # At data version 1.1, confirm that additional reports are available
             if (self.__data_major_version == 1) and (self.__data_minor_version >= 1):
                 self._hid.get_feature_report(_RID_BUTTONS_MAP, _REPORT_SIZE_BUTTONS_MAP)
+
+            # At data version 1.2, confirm that additional reports are available
+            if (self.__data_major_version == 1) and (self.__data_minor_version >= 2):
+                self._hid.get_feature_report(_RID_HARDWARE_ID, _REPORT_SIZE_HARDWARE_ID)
+
+            # Check availability of custom hardware ID
+            if (self.__data_major_version == 1) and (self.__data_minor_version >= 2):
+                report5 = self._get_hardware_id_report()
+                self._custom_hw_id_enabled = (report5[0] != 0) or (report5[1] != 0)
+            else:
+                self._custom_hw_id_enabled = False
+
             return True
         except Exception:
             return False
@@ -146,7 +174,7 @@ class SimWheel:
         """Read a device configuration feature report (id #3)."""
         report3 = bytes(self._hid.get_feature_report(_RID_CONFIG, _MAX_REPORT_SIZE))
         if self.__data_minor_version >= 2:
-            return struct.unpack("<BBBBBHH", report3[1:10])
+            return struct.unpack("<BBBBBB", report3[1:7])
         if self.__data_minor_version >= 1:
             return struct.unpack("<BBBBB", report3[1:6])
         else:
@@ -164,11 +192,8 @@ class SimWheel:
             aux[5] = data[4]
         if self.__data_minor_version >= 2:
             aux[6] = data[5]
-            aux[7] = data[6]
-            aux[8] = data[7]
-            aux[9] = data[8]
         if self.__data_minor_version == 2:
-            self._hid.send_feature_report(aux)
+            self._hid.send_feature_report(aux[0:7])
         elif self.__data_minor_version == 1:
             self._hid.send_feature_report(aux[0:6])
         elif self.__data_minor_version == 0:
@@ -187,12 +212,34 @@ class SimWheel:
             return ()
 
     def _send_buttons_map_report(self, data: bytes):
-        """Writes a buttons map feature ."""
+        """Writes a buttons map feature report."""
         aux = bytearray(_REPORT_SIZE_BUTTONS_MAP)
         aux[0] = _RID_BUTTONS_MAP
         aux[1] = data[0]
         aux[2] = data[1]
         aux[3] = data[2]
+        self._hid.send_feature_report(aux)
+
+    def _get_hardware_id_report(self):
+        """Read a custom hardware ID feature report (id #5)."""
+        if self.__data_minor_version >= 2:
+            data = bytes(
+                self._hid.get_feature_report(_RID_HARDWARE_ID, _REPORT_SIZE_HARDWARE_ID)
+            )
+            return struct.unpack("<HHH", data[1:7])
+        else:
+            return ()
+
+    def _send_hardware_id_report(self, data: bytes):
+        """Writes a custom hardware ID feature report."""
+        aux = bytearray(_REPORT_SIZE_HARDWARE_ID)
+        aux[0] = _RID_HARDWARE_ID
+        aux[1] = data[0]
+        aux[2] = data[1]
+        aux[3] = data[2]
+        aux[4] = data[3]
+        aux[5] = data[4]
+        aux[6] = data[5]
         self._hid.send_feature_report(aux)
 
     def _is_ready(self):
@@ -286,7 +333,7 @@ class SimWheel:
             return False
 
     @property
-    def batter_soc(self) -> int:
+    def batter_soc(self) -> int | None:
         """Returns a percentage (0..100) of current battery charge"""
         if self._is_ready():
             try:
@@ -294,27 +341,20 @@ class SimWheel:
                 return report[3]
             except Exception:
                 self.close()
-        else:
-            return 100
+        return None
 
     @property
-    def data_major_version(self) -> int:
+    def data_major_version(self) -> int | None:
         """Major version of the data interchange specification supported by this device."""
-        if self._is_ready():
-            return self.__data_major_version
-        else:
-            return 0
+        return self.__data_major_version
 
     @property
-    def data_minor_version(self) -> int:
+    def data_minor_version(self) -> int | None:
         """Minor version of the data interchange specification supported by this device."""
-        if self._is_ready():
-            return self.__data_minor_version
-        else:
-            return 0
+        return self.__data_minor_version
 
     @property
-    def clutch_working_mode(self) -> ClutchPaddlesWorkingMode:
+    def clutch_working_mode(self) -> ClutchPaddlesWorkingMode | None:
         """Returns the current working mode of clutch paddles.
 
         This value has no meaning if there are no clutch paddles.
@@ -326,7 +366,7 @@ class SimWheel:
                 return ClutchPaddlesWorkingMode(report[0])
             except Exception:
                 self.close()
-                return ClutchPaddlesWorkingMode.CLUTCH
+        return None
 
     @clutch_working_mode.setter
     def clutch_working_mode(self, mode: ClutchPaddlesWorkingMode):
@@ -343,7 +383,7 @@ class SimWheel:
                 self.close()
 
     @property
-    def alt_buttons_working_mode(self) -> bool:
+    def alt_buttons_working_mode(self) -> bool | None:
         """Returns the working mode of ALT buttons.
 
         True for alternate mode, False for regular buttons mode.
@@ -356,6 +396,7 @@ class SimWheel:
                 return bool(report[1])
             except Exception:
                 self.close()
+        return None
 
     @alt_buttons_working_mode.setter
     def alt_buttons_working_mode(self, mode: bool):
@@ -372,7 +413,7 @@ class SimWheel:
                 self.close()
 
     @property
-    def bite_point(self) -> int:
+    def bite_point(self) -> int | None:
         """Returns the current clutch's bite point.
 
         A value in the range from 0 to 254, inclusive.
@@ -384,6 +425,7 @@ class SimWheel:
                 return report[2]
             except Exception:
                 self.close()
+        return None
 
     @bite_point.setter
     def bite_point(self, value: int):
@@ -402,7 +444,7 @@ class SimWheel:
                 self.close()
 
     @property
-    def dpad_working_mode(self) -> bool:
+    def dpad_working_mode(self) -> bool | None:
         """Returns the working mode of navigational controls.
 
         True for navigation, False for regular buttons mode.
@@ -415,8 +457,7 @@ class SimWheel:
                 return bool(report[4])
             except Exception:
                 self.close()
-        else:
-            return False
+        return None
 
     @dpad_working_mode.setter
     def dpad_working_mode(self, mode: bool):
@@ -463,16 +504,68 @@ class SimWheel:
             return ""
 
     @property
-    def is_read_only(self) -> bool:
-        """Security lock on this device."""
-        if (self.__data_minor_version >= 2) and self._is_ready():
-            # Get "capabilities" report (ID #2)
-            report2 = bytes(
-                self._hid.get_feature_report(_RID_CAPABILITIES, _MAX_REPORT_SIZE)
+    def is_user_configurable(self) -> bool:
+        """Returns True if this device has any setting available for user configuration."""
+        if self._is_ready():
+            return (
+                self.has_buttons_map
+                or self.has_custom_hw_id
+                or bool(
+                    (
+                        (1 << _CAP_ALT)
+                        | (1 << _CAP_CLUTCH_BUTTON)
+                        | (1 << _CAP_CLUTCH_ANALOG)
+                        | (1 << _CAP_BATTERY_CALIBRATION_AVAILABLE)
+                        | (1 << _CAP_DPAD)
+                    )
+                    & self._capability_flags
+                )
             )
-            return report2[17] != 0
         else:
             return False
+
+    @property
+    def is_read_only(self) -> bool:
+        """Security lock on this device."""
+        if self._is_ready() and (self.__data_minor_version >= 2):
+            try:
+                report3 = bytes(
+                    self._hid.get_feature_report(_RID_CONFIG, _MAX_REPORT_SIZE)
+                )
+                return report3[6] != 0
+            except Exception:
+                self.close()
+        return False
+
+    @property
+    def has_custom_hw_id(self) -> bool:
+        """Check if this device can set a custom hardware ID"""
+        if self._is_ready():
+            return self._custom_hw_id_enabled
+        else:
+            return False
+
+    @property
+    def custom_vid(self) -> int | None:
+        """Custom VID for this device"""
+        if self._is_ready():
+            try:
+                report = self._get_hardware_id_report()
+                return report[0]
+            except Exception:
+                self.close()
+        return None
+
+    @property
+    def custom_pid(self) -> int | None:
+        """Custom VID for this device"""
+        if self._is_ready():
+            try:
+                report = self._get_hardware_id_report()
+                return report[1]
+            except Exception:
+                self.close()
+        return None
 
     def recalibrate_analog_axes(self):
         """Force auto-calibration of analog clutch paddles (if available)."""
@@ -625,22 +718,61 @@ class SimWheel:
             if btn_map != {}:
                 yield btn_map
 
-    @property
-    def is_user_configurable(self):
-        """Returns True if this device has any setting available for user configuration."""
+    def reset_custom_hardware_id(self):
+        """Reset custom hardware ID to factory defaults after next reboot (BLE only)"""
         if self._is_ready():
-            return self.has_buttons_map or bool(
-                (
-                    (1 << _CAP_ALT)
-                    | (1 << _CAP_CLUTCH_BUTTON)
-                    | (1 << _CAP_CLUTCH_ANALOG)
-                    | (1 << _CAP_BATTERY_CALIBRATION_AVAILABLE)
-                    | (1 << _CAP_DPAD)
+            try:
+                self._send_hardware_id_report(
+                    bytes(
+                        [
+                            0x00,
+                            0x00,
+                            0x00,
+                            0x00,
+                            0x96,
+                            0xAA,
+                        ]
+                    )
                 )
-                & self._capability_flags
-            )
-        else:
-            return False
+            except Exception:
+                self.close()
+
+    def set_custom_hardware_id(self, vid: int, pid: int):
+        """Force a custom hardware ID after next reboot (BLE only)
+
+        Parameters:
+
+            vid : Vendor ID in the range 1..0xFFFF.
+            pid : Product ID in the range 1..0xFFFF.
+        """
+        if (pid <= 0) or (pid > 0xFFFF) or (vid <= 0) or (vid > 0xFFFF):
+            raise ValueError("Custom PID/VID not in the range 1..0xFFFF")
+        if self._is_ready():
+            try:
+                control = (vid * pid) % 65536
+                vid_bytes = vid.to_bytes(2, byteorder="little")
+                pid_bytes = pid.to_bytes(2, byteorder="little")
+                control_bytes = control.to_bytes(2, byteorder="little")
+                # for debug: print(
+                #     f"Request for custom hardware ID: VID = {vid} PID = {pid}, control = {control} "
+                # )
+                # print(f"(bytes): VID = {vid_bytes[0]},{vid_bytes[1]}")
+                # print(f"(bytes): PID = {pid_bytes[0]},{pid_bytes[1]}")
+                print(f"(bytes): control = {control_bytes[0]},{control_bytes[1]}")
+                self._send_hardware_id_report(
+                    bytes(
+                        [
+                            vid_bytes[0],
+                            vid_bytes[1],
+                            pid_bytes[0],
+                            pid_bytes[1],
+                            control_bytes[0],
+                            control_bytes[1],
+                        ]
+                    )
+                )
+            except Exception:
+                self.close()
 
     def serialize(self, all: bool = False) -> dict:
         """Returns a dictionary containing current device settings
@@ -734,5 +866,9 @@ if __name__ == "__main__":
         print(f"Manufacturer: {sim_wheel.manufacturer}")
         print(f"Product: {sim_wheel.product_name}")
         print(f"Device ID: {sim_wheel.device_id}")
+        print(f"Allow custom HW ID: {sim_wheel.has_custom_hw_id}")
+        print(f"Custom VID: {sim_wheel.custom_vid}")
+        print(f"Custom PID: {sim_wheel.custom_pid}")
+        print(f"Security lock: {sim_wheel.is_read_only}")
         print("Please, wait while loading user settings...")
         print(sim_wheel.serialize(all=True))
