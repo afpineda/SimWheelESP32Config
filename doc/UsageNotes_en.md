@@ -5,7 +5,7 @@
 At startup, connected devices will be automatically scanned.
 When found, the app will connect to the first available one.
 
-Note that bluetooth devices **must be paired** first
+Note that Bluetooth devices **must be paired** first
 in order for this app to detect them.
 
 ## Select another sim wheel / button box
@@ -22,6 +22,12 @@ Click on the "Select" button in order to connect to that device.
 ## User settings
 
 Only **user-configurable** settings will show up, which depends on your device capabilities.
+
+## Security lock
+
+You can activate or deactivate the security lock on your device by pressing a specific combination of buttons.
+This program will display a warning,
+and any attempt to modify the configuration will be unsuccessful if the security lock is activated.
 
 ## "Buttons map"
 
@@ -48,3 +54,19 @@ Only **user-configurable** settings will show up, which depends on your device c
   By default, this is the same as the "firmware-defined" button number plus 64.
 - Any user-defined button number is in the range from 0 to 127 (inclusive), which is the absolute maximum
   count of buttons supported by the operating system.
+
+## Custom hardware ID and display name
+
+Available on Bluetooth devices, only.
+
+If you have two or more BLE devices using ESP32 open simwheel firmware,
+**all of them will show the same display name, because they share the same hardware ID**.
+
+If you need two or more devices to exhibit a different display name,
+provide a custom PID (**recommended**), VID, or both.
+You may use the existing VID and PID from another non-related device.
+However, this is not recommended.
+
+You may set a custom **display name** for all devices sharing the given VID and PID.
+If you clear the display name, a generic one will show on the next computer reboot.
+**Be warned: you could rename other non-related devices**.

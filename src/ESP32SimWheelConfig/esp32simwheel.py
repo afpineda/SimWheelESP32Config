@@ -758,7 +758,7 @@ class SimWheel:
                 # )
                 # print(f"(bytes): VID = {vid_bytes[0]},{vid_bytes[1]}")
                 # print(f"(bytes): PID = {pid_bytes[0]},{pid_bytes[1]}")
-                print(f"(bytes): control = {control_bytes[0]},{control_bytes[1]}")
+                # print(f"(bytes): control = {control_bytes[0]},{control_bytes[1]}")
                 self._send_hardware_id_report(
                     bytes(
                         [

@@ -21,6 +21,7 @@ from appstrings import gettext, set_translation_locale
 from lang_en import EN
 from lang_es import ES  # NOSONAR
 from lang_zh import ZH  # NOSONAR
+from rename_devices import get_display_name_from_registry, set_display_name_in_registry
 import sys
 
 ## NOTE: Must avoid non-ASCII characters at print()
@@ -46,6 +47,7 @@ for arg in sys.argv:
 _ = gettext
 
 STR = EN
+MAX_DISPLAY_NAME_LENGTH = 72
 
 ##################################################################################################
 
@@ -96,7 +98,8 @@ def get_16bit_value(value_as_string: str) -> int | None:
 
 
 def hardware_id_validate(value: str) -> bool:
-    return get_16bit_value(value)!=None
+    return get_16bit_value(value) != None
+
 
 def please_wait():
     notification = ui.notification(timeout=None)
@@ -314,23 +317,34 @@ async def save_profile():
 
 
 def on_update_hardware_id():
-    custom_vid_input.value = device.custom_vid
-    custom_pid_input.value = device.custom_pid
+    vid = device.custom_vid
+    pid = device.custom_pid
+    custom_vid_input.value = vid
+    custom_pid_input.value = pid
+    display_name_input.value = get_display_name_from_registry(vid, pid)
 
 
 async def hardware_id_factory_defaults():
     try:
         device.reset_custom_hardware_id()
+        vid = device.custom_vid
+        pid = device.custom_pid
+        set_display_name_in_registry(vid, pid, None)
         on_update_hardware_id()
         notify_done()
     except Exception:
         notify_done(False)
 
+
 async def hardware_id_set():
     try:
+        display_name = display_name_input.value
+        if (display_name != None) and (len(display_name) > MAX_DISPLAY_NAME_LENGTH):
+            raise RuntimeError("Display name is too long")
         vid = get_16bit_value(custom_vid_input.value)
         pid = get_16bit_value(custom_pid_input.value)
-        device.set_custom_hardware_id(vid,pid)
+        device.set_custom_hardware_id(vid, pid)
+        set_display_name_in_registry(vid, pid, display_name)
         on_update_hardware_id()
         notify_done()
     except Exception:
@@ -478,7 +492,9 @@ with profile_group:
             _(STR.SAVE), icon="file_download", on_click=save_profile
         )
 
-hardware_id_group = ui.expansion(_(STR.CUSTOM_HARDWARE_ID), value=False, icon="fingerprint")
+hardware_id_group = ui.expansion(
+    _(STR.CUSTOM_HARDWARE_ID), value=False, icon="fingerprint"
+)
 hardware_id_group.classes("text-h6")
 hardware_id_group.tailwind.font_weight("bold")
 hardware_id_group.bind_visibility_from(device, "has_custom_hw_id")
@@ -492,17 +508,26 @@ with hardware_id_group:
     check_not_an_asshole = ui.checkbox(_(STR.I_AM_NOT_AN_ASSHOLE), value=False)
     check_not_an_asshole.style("font-size: 50%")
     check_not_an_asshole.on("update:model-value", on_update_hardware_id)
+    display_name_input = ui.input(
+        label="Display name",
+        placeholder="Custom display name",
+        validation={
+            _(STR.ERROR): lambda value: (value == None)
+            or (len(value) <= MAX_DISPLAY_NAME_LENGTH)
+        },
+    )
+    display_name_input.bind_enabled_from(check_not_an_asshole, "value")
     with ui.row().classes("self-center"):
         custom_vid_input = ui.input(
             label="Custom vendor ID",
             placeholder="16-bit unsigned integer",
-            validation={"Invalid": hardware_id_validate},
+            validation={_(STR.ERROR): hardware_id_validate},
         )
         custom_vid_input.bind_enabled_from(check_not_an_asshole, "value")
         custom_pid_input = ui.input(
             label="Custom product ID",
             placeholder="16-bit unsigned integer",
-            validation={"Invalid": hardware_id_validate},
+            validation={_(STR.ERROR): hardware_id_validate},
         )
         custom_pid_input.bind_enabled_from(check_not_an_asshole, "value")
     with ui.row().classes("self-center"):
