@@ -51,3 +51,10 @@
 - Fixed bug which caused an app crash at startup when using certain character encodings in the text terminal
   (used for logging purposes). No new functionalities.
 - Fixed incomplete installation instructions for Linux users.
+
+## 2.2.0
+
+- Updated to work with data version 1.2.
+- On BLE devices you may set a custom VID, PID (Windows/Linux/Mac) and/or display name (Windows only).
+- Bug fixes.
+- Updated documentation.
