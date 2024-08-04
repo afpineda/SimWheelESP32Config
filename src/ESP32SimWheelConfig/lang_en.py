@@ -53,7 +53,9 @@ class EN(Enum):
     DANGER_ZONE = "Danger zoner"
     CUSTOM_HARDWARE_ID = "Custom hardware ID"
     I_AM_NOT_AN_ASSHOLE = "I know what I am doing"
-
-
+    CUSTOM_VID = "Custom vendor ID (VID)"
+    CUSTOM_PID = "Custom product ID (PID)"
+    VID_PID_FORMAT = "16-bit unsigned integer"
+    CUSTOM_DISPLAY_NAME = "Custom display name (Windows only)"
 
 install(EN)

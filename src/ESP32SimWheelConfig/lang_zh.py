@@ -53,5 +53,9 @@ class ZH(Enum):
     DANGER_ZONE = "危险区域"
     CUSTOM_HARDWARE_ID = "自定义硬件 ID"
     I_AM_NOT_AN_ASSHOLE = "我知道我在做什么"
+    CUSTOM_VID = "自定义供应商 ID （VID）"
+    CUSTOM_PID = "自定义产品 ID （PID）"
+    VID_PID_FORMAT = "16 位无符号整数"
+    CUSTOM_DISPLAY_NAME ="自定义显示名称（仅限 Windows）"
 
 install(ZH)

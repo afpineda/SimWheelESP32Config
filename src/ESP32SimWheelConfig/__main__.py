@@ -532,32 +532,31 @@ with hardware_id_group:
     check_not_an_asshole.style("font-size: 50%")
     check_not_an_asshole.on("update:model-value", on_update_hardware_id)
     display_name_input = ui.input(
-        label="Display name",
-        placeholder="Custom display name",
+        label=_(STR.CUSTOM_DISPLAY_NAME),
         validation={
             _(STR.ERROR): lambda value: (value == None)
             or (len(value) <= MAX_DISPLAY_NAME_LENGTH)
         },
     )
     display_name_input.classes("w-full")
-    if (sys.platform=="win32"):
+    if sys.platform == "win32":
         display_name_input.bind_enabled_from(check_not_an_asshole, "value")
     else:
         display_name_input.enabled = False
-
-    with ui.row().classes("self-center"):
-        custom_vid_input = ui.input(
-            label="Custom vendor ID",
-            placeholder="16-bit unsigned integer",
-            validation={_(STR.ERROR): hardware_id_validate},
-        )
-        custom_vid_input.bind_enabled_from(check_not_an_asshole, "value")
-        custom_pid_input = ui.input(
-            label="Custom product ID",
-            placeholder="16-bit unsigned integer",
-            validation={_(STR.ERROR): hardware_id_validate},
-        )
-        custom_pid_input.bind_enabled_from(check_not_an_asshole, "value")
+    custom_vid_input = ui.input(
+        label=_(STR.CUSTOM_VID),
+        placeholder=_(STR.VID_PID_FORMAT),
+        validation={_(STR.ERROR): hardware_id_validate},
+    )
+    custom_vid_input.classes("w-full")
+    custom_vid_input.bind_enabled_from(check_not_an_asshole, "value")
+    custom_pid_input = ui.input(
+        label=_(STR.CUSTOM_PID),
+        placeholder=_(STR.VID_PID_FORMAT),
+        validation={_(STR.ERROR): hardware_id_validate},
+    )
+    custom_pid_input.classes("w-full")
+    custom_pid_input.bind_enabled_from(check_not_an_asshole, "value")
     with ui.row().classes("self-center"):
         btn_hardware_id_update = ui.button(
             _(STR.SAVE), icon="file_download", on_click=hardware_id_set

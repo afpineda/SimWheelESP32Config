@@ -55,5 +55,9 @@ class ES(Enum):
     DANGER_ZONE = "Zona de peligro"
     CUSTOM_HARDWARE_ID = "ID a medida"
     I_AM_NOT_AN_ASSHOLE = "Sé lo que hago"
+    CUSTOM_VID = "ID de fabricante a medida (VID)"
+    CUSTOM_PID = "ID de producto a medida (PID)"
+    VID_PID_FORMAT = "Entero sin signo de 16 bits"
+    CUSTOM_DISPLAY_NAME = "Nombre en pantalla a medida (solo Windows)"
 
 install(ES)
