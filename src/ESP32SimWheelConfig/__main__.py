@@ -48,6 +48,7 @@ _ = gettext
 
 STR = EN
 MAX_DISPLAY_NAME_LENGTH = 72
+DEFAULT_GROUP_CLASSES = "text-h6 w-full"
 
 ##################################################################################################
 
@@ -394,7 +395,7 @@ read_only_notice.bind_visibility_from(device, "is_read_only")
 ## ALT buttons group
 
 alt_buttons_group = ui.expansion(_(STR.ALT_BUTTONS), value=True, icon="touch_app")
-alt_buttons_group.classes("text-h6 w-full")
+alt_buttons_group.classes(DEFAULT_GROUP_CLASSES)
 alt_buttons_group.tailwind.font_weight("bold")
 alt_buttons_group.bind_visibility_from(device, "has_alt_buttons")
 with alt_buttons_group:
@@ -405,7 +406,7 @@ with alt_buttons_group:
 ## DPAD group
 
 dpad_group = ui.expansion(_(STR.DPAD), value=True, icon="gamepad")
-dpad_group.classes("text-h6 w-full")
+dpad_group.classes(DEFAULT_GROUP_CLASSES)
 dpad_group.tailwind.font_weight("bold")
 dpad_group.bind_visibility_from(device, "has_dpad")
 with dpad_group:
@@ -416,7 +417,7 @@ with dpad_group:
 ## Clutch paddles group
 
 clutch_paddles_group = ui.expansion(_(STR.CLUTCH_PADDLES), value=True, icon="garage")
-clutch_paddles_group.classes("text-h6 w-full")
+clutch_paddles_group.classes(DEFAULT_GROUP_CLASSES)
 clutch_paddles_group.tailwind.font_weight("bold")
 clutch_paddles_group.bind_visibility_from(device, "has_clutch")
 with clutch_paddles_group:
@@ -449,7 +450,7 @@ with clutch_paddles_group:
 ## Battery group
 
 battery_group = ui.expansion(_(STR.BATTERY), value=True, icon="battery_full")
-battery_group.classes("text-h6 w-full")
+battery_group.classes(DEFAULT_GROUP_CLASSES)
 battery_group.tailwind.font_weight("bold")
 battery_group.bind_visibility_from(device, "has_battery")
 with battery_group:
@@ -468,7 +469,7 @@ with battery_group:
 ## Buttons map group
 
 buttons_map_group = ui.expansion(_(STR.BUTTONS_MAP), value=False, icon="map")
-buttons_map_group.classes("text-h6 w-full")
+buttons_map_group.classes(DEFAULT_GROUP_CLASSES)
 buttons_map_group.tailwind.font_weight("bold")
 buttons_map_group.bind_visibility_from(device, "has_buttons_map")
 with buttons_map_group:
@@ -493,7 +494,7 @@ with buttons_map_group:
 ## Profile group
 
 profile_group = ui.expansion(_(STR.LOCAL_PROFILE), value=False, icon="inventory_2")
-profile_group.classes("text-h6 w-full")
+profile_group.classes(DEFAULT_GROUP_CLASSES)
 profile_group.tailwind.font_weight("bold")
 profile_group.bind_visibility_from(device, "is_alive")
 with profile_group:
@@ -517,7 +518,7 @@ with profile_group:
 hardware_id_group = ui.expansion(
     _(STR.CUSTOM_HARDWARE_ID), value=False, icon="fingerprint"
 )
-hardware_id_group.classes("text-h6 w-full")
+hardware_id_group.classes(DEFAULT_GROUP_CLASSES)
 hardware_id_group.tailwind.font_weight("bold")
 hardware_id_group.bind_visibility_from(device, "has_custom_hw_id")
 with hardware_id_group:
@@ -539,7 +540,11 @@ with hardware_id_group:
         },
     )
     display_name_input.classes("w-full")
-    display_name_input.bind_enabled_from(check_not_an_asshole, "value")
+    if (sys.platform=="win32"):
+        display_name_input.bind_enabled_from(check_not_an_asshole, "value")
+    else:
+        display_name_input.enabled = False
+
     with ui.row().classes("self-center"):
         custom_vid_input = ui.input(
             label="Custom vendor ID",

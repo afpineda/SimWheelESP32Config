@@ -21,6 +21,7 @@ Functions:
 ###############################################################################
 
 import winreg
+from sys import platform
 
 __all__ = [
     "get_display_name_from_registry",
@@ -43,6 +44,8 @@ def _compute_key(vid: int, pid: int) -> str:
 
 def get_display_name_from_registry(vid: int, pid: int) -> str | None:
     """Get the device display name from the Windows registry"""
+    if platform != "win32":
+        return None
     key = _compute_key(vid, pid)
     try:
         key_handle = winreg.OpenKeyEx(winreg.HKEY_CURRENT_USER, key)
@@ -58,15 +61,16 @@ def set_display_name_in_registry(
     vid: int, pid: int, new_name: str | None
 ) -> str | None:
     """Set the device display name in the Windows registry"""
-    key = _compute_key(vid, pid)
-    key_handle = winreg.CreateKeyEx(winreg.HKEY_CURRENT_USER, key)
-    try:
-        if (new_name == None) or (new_name == ""):
-            try:
-                winreg.DeleteValue(key_handle, __VALUE_OEM_NAME)
-            except FileNotFoundError:
-                pass
-        else:
-            winreg.SetValueEx(key_handle, __VALUE_OEM_NAME, 0, winreg.REG_SZ, new_name)
-    finally:
-        key_handle.Close()
+    if platform == "win32":
+        key = _compute_key(vid, pid)
+        key_handle = winreg.CreateKeyEx(winreg.HKEY_CURRENT_USER, key)
+        try:
+            if (new_name == None) or (new_name == ""):
+                try:
+                    winreg.DeleteValue(key_handle, __VALUE_OEM_NAME)
+                except FileNotFoundError:
+                    pass
+            else:
+                winreg.SetValueEx(key_handle, __VALUE_OEM_NAME, 0, winreg.REG_SZ, new_name)
+        finally:
+            key_handle.Close()
