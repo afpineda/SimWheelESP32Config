@@ -22,6 +22,7 @@ from lang_en import EN
 from lang_es import ES  # NOSONAR
 from lang_zh import ZH  # NOSONAR
 from rename_devices import get_display_name_from_registry, set_display_name_in_registry
+import os
 import sys
 
 ## NOTE: Must avoid non-ASCII characters at print()
@@ -82,6 +83,10 @@ __buttons_map_columns = [
         "autoHeaderHeight": True,
     },
 ]
+
+
+def is_running_in_windows() -> bool:
+    return os.name == "nt"
 
 
 def get_16bit_value(value_as_string: str) -> int | None:
@@ -330,7 +335,8 @@ async def hardware_id_factory_defaults():
         device.reset_custom_hardware_id()
         vid = device.custom_vid
         pid = device.custom_pid
-        set_display_name_in_registry(vid, pid, None)
+        if is_running_in_windows():
+            set_display_name_in_registry(vid, pid, None)
         on_update_hardware_id()
         notify_done()
     except Exception:
@@ -345,7 +351,8 @@ async def hardware_id_set():
         vid = get_16bit_value(custom_vid_input.value)
         pid = get_16bit_value(custom_pid_input.value)
         device.set_custom_hardware_id(vid, pid)
-        set_display_name_in_registry(vid, pid, display_name)
+        if is_running_in_windows():
+            set_display_name_in_registry(vid, pid, display_name)
         on_update_hardware_id()
         notify_done()
     except Exception:
@@ -539,7 +546,7 @@ with hardware_id_group:
         },
     )
     display_name_input.classes("w-full")
-    if sys.platform == "win32":
+    if is_running_in_windows():
         display_name_input.bind_enabled_from(check_not_an_asshole, "value")
     else:
         display_name_input.enabled = False
