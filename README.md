@@ -14,9 +14,10 @@ A companion app for [ESP32 based open-source wireless steering wheel](https://gi
 - Force battery auto-calibration (not available if the battery was "factory-calibrated" previously).
 - Map hardware buttons to user-defined HID buttons.
 - Supports all firmware versions to date (data versions 1.0, 1.1 and 1.2).
-- Windows / Linux / Mac
 - Rename device (Windows and BLE, only)
 - Set a custom VID and/or PID (BLE only)
+- Reverse axis polarity (in analog clutch paddles only)
+- Windows / Linux / Mac
 - UI languages (automatically detected):
   - English (default)
   - Español (Spanish)

@@ -57,5 +57,7 @@ class ZH(Enum):
     CUSTOM_PID = "自定义产品 ID （PID）"
     VID_PID_FORMAT = "16 位无符号整数"
     CUSTOM_DISPLAY_NAME ="自定义显示名称（仅限 Windows）"
+    REVERSE_LEFT_AXIS = "反转左轴"
+    REVERSE_RIGHT_AXIS = "反转右轴"
 
 install(ZH)

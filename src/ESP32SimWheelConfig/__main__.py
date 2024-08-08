@@ -359,6 +359,22 @@ async def hardware_id_set():
         notify_done(False)
 
 
+async def reverse_left_axis_click():
+    try:
+        device.reverse_left_axis()
+        notify_done()
+    except Exception:
+        notify_done(False)
+
+
+async def reverse_right_axis_click():
+    try:
+        device.reverse_right_axis()
+        notify_done()
+    except Exception:
+        notify_done(False)
+
+
 ##################################################################################################
 
 # Top header
@@ -408,7 +424,7 @@ alt_buttons_group.bind_visibility_from(device, "has_alt_buttons")
 with alt_buttons_group:
     ui.toggle({True: _(STR.ALT_MODE), False: _(STR.REGULAR_BUTTON)}).bind_value(
         device, "alt_buttons_working_mode"
-    )
+    ).classes("self-center")
 
 ## DPAD group
 
@@ -419,7 +435,7 @@ dpad_group.bind_visibility_from(device, "has_dpad")
 with dpad_group:
     ui.toggle({True: _(STR.NAV), False: _(STR.REGULAR_BUTTON)}).bind_value(
         device, "dpad_working_mode"
-    )
+    ).classes("self-center")
 
 ## Clutch paddles group
 
@@ -430,7 +446,7 @@ clutch_paddles_group.bind_visibility_from(device, "has_clutch")
 with clutch_paddles_group:
     ui.toggle(
         {0: _(STR.CLUTCH), 1: _(STR.AXIS), 2: _(STR.ALT_MODE), 3: _(STR.BUTTON)}
-    ).bind_value(device, "clutch_working_mode")
+    ).classes("self-center").bind_value(device, "clutch_working_mode")
     ui.label(_(STR.BITE_POINT)).classes("self-center").tailwind.font_size("sm")
     bite_point_slider = ui.slider(min=0, max=254, step=1)
     bite_point_slider.bind_value_from(device, "bite_point")
@@ -453,6 +469,18 @@ with clutch_paddles_group:
         icon="autorenew",
         on_click=lambda: device.recalibrate_analog_axes(),
     ).bind_visibility_from(device, "has_analog_clutch_paddles").classes("self-center")
+    with ui.row().classes("self-center"):
+        btn_reverse_left_axis = ui.button(
+            _(STR.REVERSE_LEFT_AXIS),
+            icon="invert_colors",
+            on_click=reverse_left_axis_click,
+        ).bind_visibility_from(device, "has_analog_clutch_paddles")
+        btn_reverse_right_axis = ui.button(
+            _(STR.REVERSE_RIGHT_AXIS),
+            icon="invert_colors",
+            on_click=reverse_right_axis_click,
+        ).bind_visibility_from(device, "has_analog_clutch_paddles")
+
 
 ## Battery group
 
@@ -582,7 +610,7 @@ ui.run(
     native=True,
     reload=False,
     title="ESP32 open-source sim wheel / button box",
-    window_size=(550, 600),
+    window_size=(800, 600),
     uvicorn_logging_level="error",
     binding_refresh_interval=0.3,
 )

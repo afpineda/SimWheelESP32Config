@@ -59,5 +59,8 @@ class ES(Enum):
     CUSTOM_PID = "ID de producto a medida (PID)"
     VID_PID_FORMAT = "Entero sin signo de 16 bits"
     CUSTOM_DISPLAY_NAME = "Nombre en pantalla a medida (solo Windows)"
+    REVERSE_LEFT_AXIS = "Invertir eje izquierdo"
+    REVERSE_RIGHT_AXIS = "Invertir eje derecho"
+
 
 install(ES)

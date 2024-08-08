@@ -57,5 +57,7 @@ class EN(Enum):
     CUSTOM_PID = "Custom product ID (PID)"
     VID_PID_FORMAT = "16-bit unsigned integer"
     CUSTOM_DISPLAY_NAME = "Custom display name (Windows only)"
+    REVERSE_LEFT_AXIS = "Reverse left axis"
+    REVERSE_RIGHT_AXIS = "Reverse right axis"
 
 install(EN)

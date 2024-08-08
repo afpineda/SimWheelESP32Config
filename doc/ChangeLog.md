@@ -58,3 +58,7 @@
 - On BLE devices you may set a custom VID, PID (Windows/Linux/Mac) and/or display name (Windows only).
 - Bug fixes.
 - Updated documentation.
+
+## 2.3.0
+
+- Added two buttons in order to reverse axis polarity (in analog clutch paddles only).

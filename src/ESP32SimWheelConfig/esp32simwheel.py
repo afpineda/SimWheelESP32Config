@@ -774,6 +774,20 @@ class SimWheel:
             except Exception:
                 self.close()
 
+    def reverse_left_axis(self):
+        if self._is_ready():
+            try:
+                self._send_config_report(bytes([0x01, 0xFF, 0xFF, 0x05, 0xFF, 0xFF]))
+            except Exception:
+                self.close()
+
+    def reverse_right_axis(self):
+        if self._is_ready():
+            try:
+                self._send_config_report(bytes([0x01, 0xFF, 0xFF, 0x06, 0xFF, 0xFF]))
+            except Exception:
+                self.close()
+
     def serialize(self, all: bool = False) -> dict:
         """Returns a dictionary containing current device settings
 
