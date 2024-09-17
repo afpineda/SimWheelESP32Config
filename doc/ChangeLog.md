@@ -62,3 +62,7 @@
 ## 2.3.0
 
 - Added two buttons in order to reverse axis polarity (in analog clutch paddles only).
+
+## 2.4.0
+
+- Show current VID and PID on device listing.
