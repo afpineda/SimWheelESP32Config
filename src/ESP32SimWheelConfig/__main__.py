@@ -129,10 +129,11 @@ def _refresh_available_devices():
         count += 1
         with available_devices_ph:
             with ui.card() as card:
-                card.classes(add="w-full")
+                card.classes(add="w-full q-ma-xs")
                 ui.label(sim_wheel.product_name).classes("text-overline")
                 ui.label(sim_wheel.manufacturer).classes("font-thin")
-                ui.label(f"{sim_wheel.device_id:X}").classes("font-thin")
+                ui.label(f"S/N: {sim_wheel.device_id:X}").classes("font-thin")
+                ui.label(f"VID: {sim_wheel.vid:X}, PID: {sim_wheel.pid:X}").classes("font-thin")
                 ui.button(_(STR.SELECT), icon="task_alt").classes("self-center").on(
                     "click", lambda path=sim_wheel.path: select_device(path)
                 )
@@ -399,7 +400,7 @@ drawer = ui.left_drawer(value=False).props("behavior=desktop")
 drawer.on("show", refresh_available_devices)
 with drawer:
     with ui.row().classes("w-full"):
-        ui.label(_(STR.AVAILABLE_DEVICES)).classes("text-h6")
+        ui.label(_(STR.AVAILABLE_DEVICES)).classes("text-h7")
         ui.space()
         ui.button(icon="refresh").props("flat dense").on(
             "click", refresh_available_devices, throttle=1

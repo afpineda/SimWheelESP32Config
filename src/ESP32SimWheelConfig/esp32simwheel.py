@@ -90,7 +90,7 @@ class ClutchPaddlesWorkingMode(IntEnum):
 class SimWheel:
     """A class to represent an ESP32 open-source sim wheel or button box."""
 
-    def __init__(self, path: str = ""):
+    def __init__(self, path: str = "", vid: int = 0, pid: int = 0):
         """Create a representation of an ESP32 open-source sim wheel or button box."""
         self._hid = hid.device()
         self.__path = path
@@ -99,6 +99,8 @@ class SimWheel:
         self.__data_minor_version = None
         self.__data_major_version = None
         self._capability_flags = 0
+        self.__vid = vid
+        self.__pid = pid
 
     def __del__(self):
         self.close()
@@ -474,6 +476,16 @@ class SimWheel:
                 self.close()
 
     @property
+    def vid(self) -> str:
+        """Current Vendor ID."""
+        return self.__vid
+
+    @property
+    def pid(self) -> str:
+        """Current Product ID."""
+        return self.__pid
+
+    @property
     def path(self) -> str:
         """OS path to this device."""
         return self.__path
@@ -547,7 +559,10 @@ class SimWheel:
 
     @property
     def custom_vid(self) -> int | None:
-        """Custom VID for this device"""
+        """Custom VID for this device.
+
+        Effective after next reboot.
+        """
         if self._is_ready():
             try:
                 report = self._get_hardware_id_report()
@@ -558,7 +573,10 @@ class SimWheel:
 
     @property
     def custom_pid(self) -> int | None:
-        """Custom VID for this device"""
+        """Custom PID for this device.
+
+        Effective after next reboot.
+        """
         if self._is_ready():
             try:
                 report = self._get_hardware_id_report()
@@ -862,8 +880,11 @@ def enumerate(configurable_only: bool = True):
     for device_dict in hid.enumerate():
         usage_page = device_dict["usage_page"]
         page = device_dict["usage"]
+        path = device_dict["path"]
+        vid = device_dict["vendor_id"]
+        pid = device_dict["product_id"]
         if (usage_page == 1) and (page == _CONTROLLER_TYPE):
-            a_wheel = SimWheel(device_dict["path"])
+            a_wheel = SimWheel(path, vid, pid)
             test = a_wheel.is_sim_wheel and (
                 (not configurable_only) or a_wheel.is_user_configurable
             )
@@ -877,6 +898,8 @@ if __name__ == "__main__":
     for sim_wheel in enumerate(configurable_only=False):
         print("***********************************************************")
         print(f"Path: {sim_wheel.path}")
+        print(f"Current VID: {sim_wheel.vid}")
+        print(f"Current PID: {sim_wheel.pid}")
         print(f"Manufacturer: {sim_wheel.manufacturer}")
         print(f"Product: {sim_wheel.product_name}")
         print(f"Device ID: {sim_wheel.device_id}")
@@ -886,3 +909,4 @@ if __name__ == "__main__":
         print(f"Security lock: {sim_wheel.is_read_only}")
         print("Please, wait while loading user settings...")
         print(sim_wheel.serialize(all=True))
+    print("Done.")
