@@ -133,16 +133,11 @@ class SimWheel:
             data = struct.unpack("<HHHH", report2[1:9])
             check_failed = data[0] != 48977  # Expected magic number
             check_failed = check_failed or (data[1] != 1)  # Check major version
-            check_failed = check_failed or (data[2] > 2)  # Check minor version
             if check_failed:
                 return False
             self.__data_major_version = data[1]
             self.__data_minor_version = data[2]
             self._capability_flags = data[3]
-
-            # Reject unsupported (future) versions
-            if (self.__data_major_version != 1) or (self.__data_minor_version > 2):
-                return False
 
             # At data version 1.1, get device ID
             if len(report2) >= 17:
@@ -150,6 +145,7 @@ class SimWheel:
                 self.device_id = data[0]
             else:
                 self.device_id = 0
+
             # Confirm the "configuration" report is available
             self._hid.get_feature_report(_RID_CONFIG, _MAX_REPORT_SIZE)
 
