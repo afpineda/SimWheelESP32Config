@@ -43,19 +43,27 @@ _RID_BUTTONS_MAP = 4
 _RID_HARDWARE_ID = 5
 
 # Note: must increase data size in 1 to make room for the report-ID field
-
-_REPORT_SIZE_CAPABILITIES = 16 + 1
-_REPORT_SIZE_CONFIG = 6 + 1
-_REPORT_SIZE_BUTTONS_MAP = 3 + 1
-_REPORT_SIZE_HARDWARE_ID = 6 + 1
+_REPORT2_SIZE_V1_0 = 8 + 1
+_REPORT2_SIZE_V1_1 = _REPORT2_SIZE_V1_0 + 8
+_REPORT2_SIZE_V1_3 = _REPORT2_SIZE_V1_1 + 1
+_REPORT3_SIZE_V1_0 = 4 + 1
+_REPORT3_SIZE_V1_1 = _REPORT3_SIZE_V1_0 + 1
+_REPORT3_SIZE_V1_2 = _REPORT3_SIZE_V1_1 + 1
+_REPORT4_SIZE_V1_1 = 3 + 1
+_REPORT5_SIZE_V1_2 = 6 + 1
 _MAX_REPORT_SIZE = 25
 
+# Capability flags
 _CAP_CLUTCH_BUTTON = 0  # has digital clutch paddles (switches)
 _CAP_CLUTCH_ANALOG = 1  # has analog clutch paddles (potentiometers)
 _CAP_ALT = 2  # has "ALT" buttons
 _CAP_DPAD = 3  # has a directional pad
 _CAP_BATTERY = 4  # battery-operated
 _CAP_BATTERY_CALIBRATION_AVAILABLE = 5  # has battery calibration data
+
+# Data version
+_SUPPORTED_DATA_MAJOR_VERSION = 1
+_SUPPORTED_DATA_MINOR_VERSION = 3
 
 ###############################################################################
 
@@ -130,9 +138,14 @@ class SimWheel:
             )
 
             # Get magic number, data version and flags
-            data = struct.unpack("<HHHH", report2[1:9])
+            data = struct.unpack("<HHHH", report2[1:_REPORT2_SIZE_V1_0])
             check_failed = data[0] != 48977  # Expected magic number
-            check_failed = check_failed or (data[1] != 1)  # Check major version
+            check_failed = check_failed or (
+                data[1] != _SUPPORTED_DATA_MAJOR_VERSION
+            )  # Check major version
+            check_failed = check_failed or (
+                data[2] > _SUPPORTED_DATA_MINOR_VERSION
+            )  # Check minor version
             if check_failed:
                 return False
             self.__data_major_version = data[1]
@@ -140,8 +153,10 @@ class SimWheel:
             self._capability_flags = data[3]
 
             # At data version 1.1, get device ID
-            if len(report2) >= 17:
-                data = struct.unpack("<Q", report2[9:17])
+            if len(report2) >= _REPORT2_SIZE_V1_1:
+                data = struct.unpack(
+                    "<Q", report2[_REPORT2_SIZE_V1_0:_REPORT2_SIZE_V1_1]
+                )
                 self.device_id = data[0]
             else:
                 self.device_id = 0
@@ -151,11 +166,11 @@ class SimWheel:
 
             # At data version 1.1, confirm that additional reports are available
             if (self.__data_major_version == 1) and (self.__data_minor_version >= 1):
-                self._hid.get_feature_report(_RID_BUTTONS_MAP, _REPORT_SIZE_BUTTONS_MAP)
+                self._hid.get_feature_report(_RID_BUTTONS_MAP, _REPORT4_SIZE_V1_1)
 
             # At data version 1.2, confirm that additional reports are available
             if (self.__data_major_version == 1) and (self.__data_minor_version >= 2):
-                self._hid.get_feature_report(_RID_HARDWARE_ID, _REPORT_SIZE_HARDWARE_ID)
+                self._hid.get_feature_report(_RID_HARDWARE_ID, _REPORT5_SIZE_V1_2)
 
             # Check availability of custom hardware ID
             if (self.__data_major_version == 1) and (self.__data_minor_version >= 2):
@@ -172,15 +187,15 @@ class SimWheel:
         """Read a device configuration feature report (id #3)."""
         report3 = bytes(self._hid.get_feature_report(_RID_CONFIG, _MAX_REPORT_SIZE))
         if self.__data_minor_version >= 2:
-            return struct.unpack("<BBBBBB", report3[1:7])
-        if self.__data_minor_version >= 1:
-            return struct.unpack("<BBBBB", report3[1:6])
+            return struct.unpack("<BBBBBB", report3[1:_REPORT3_SIZE_V1_2])
+        elif self.__data_minor_version == 1:
+            return struct.unpack("<BBBBB", report3[1:_REPORT3_SIZE_V1_1])
         else:
-            return struct.unpack("<BBBB", report3[1:5])
+            return struct.unpack("<BBBB", report3[1:_REPORT3_SIZE_V1_0])
 
     def _send_config_report(self, data: bytes):
         """Writes a device configuration feature report (id #3)."""
-        aux = bytearray(_REPORT_SIZE_CONFIG)
+        aux = bytearray(_REPORT3_SIZE_V1_2)
         aux[0] = _RID_CONFIG
         aux[1] = data[0]
         aux[2] = data[1]
@@ -190,12 +205,12 @@ class SimWheel:
             aux[5] = data[4]
         if self.__data_minor_version >= 2:
             aux[6] = data[5]
-        if self.__data_minor_version == 2:
-            self._hid.send_feature_report(aux[0:7])
+        if self.__data_minor_version >= 2:
+            self._hid.send_feature_report(aux[0:_REPORT3_SIZE_V1_2])
         elif self.__data_minor_version == 1:
-            self._hid.send_feature_report(aux[0:6])
+            self._hid.send_feature_report(aux[0:_REPORT3_SIZE_V1_1])
         elif self.__data_minor_version == 0:
-            self._hid.send_feature_report(aux[0:5])
+            self._hid.send_feature_report(aux[0:_REPORT3_SIZE_V1_0])
         else:
             raise RuntimeError("Unsupported data version")
 
@@ -203,15 +218,15 @@ class SimWheel:
         """Read a buttons map feature report (id #4)."""
         if self.__data_minor_version >= 1:
             data = bytes(
-                self._hid.get_feature_report(_RID_BUTTONS_MAP, _REPORT_SIZE_BUTTONS_MAP)
+                self._hid.get_feature_report(_RID_BUTTONS_MAP, _REPORT4_SIZE_V1_1)
             )
-            return struct.unpack("<BBB", data[1:4])
+            return struct.unpack("<BBB", data[1:_REPORT4_SIZE_V1_1])
         else:
             return ()
 
     def _send_buttons_map_report(self, data: bytes):
         """Writes a buttons map feature report."""
-        aux = bytearray(_REPORT_SIZE_BUTTONS_MAP)
+        aux = bytearray(_REPORT4_SIZE_V1_1)
         aux[0] = _RID_BUTTONS_MAP
         aux[1] = data[0]
         aux[2] = data[1]
@@ -222,7 +237,7 @@ class SimWheel:
         """Read a custom hardware ID feature report (id #5)."""
         if self.__data_minor_version >= 2:
             data = bytes(
-                self._hid.get_feature_report(_RID_HARDWARE_ID, _REPORT_SIZE_HARDWARE_ID)
+                self._hid.get_feature_report(_RID_HARDWARE_ID, _REPORT5_SIZE_V1_2)
             )
             return struct.unpack("<HHH", data[1:7])
         else:
@@ -230,7 +245,7 @@ class SimWheel:
 
     def _send_hardware_id_report(self, data: bytes):
         """Writes a custom hardware ID feature report."""
-        aux = bytearray(_REPORT_SIZE_HARDWARE_ID)
+        aux = bytearray(_REPORT5_SIZE_V1_2)
         aux[0] = _RID_HARDWARE_ID
         aux[1] = data[0]
         aux[2] = data[1]
