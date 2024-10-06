@@ -66,3 +66,4 @@
 ## 2.4.0
 
 - Show current VID and PID on device listing.
+- Updated to work with data version 1.3.
