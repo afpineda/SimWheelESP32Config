@@ -61,6 +61,8 @@ class ES(Enum):
     CUSTOM_DISPLAY_NAME = "Nombre en pantalla a medida (solo Windows)"
     REVERSE_LEFT_AXIS = "Invertir eje izquierdo"
     REVERSE_RIGHT_AXIS = "Invertir eje derecho"
+    LAUNCH_CTRL_LEFT_MASTER = "Control de lanzada (leva maestra izquierda)"
+    LAUNCH_CTRL_RIGHT_MASTER = "Control de lanzada (leva maestra derecha)"
 
 
 install(ES)

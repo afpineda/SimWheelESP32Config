@@ -59,5 +59,7 @@ class EN(Enum):
     CUSTOM_DISPLAY_NAME = "Custom display name (Windows only)"
     REVERSE_LEFT_AXIS = "Reverse left axis"
     REVERSE_RIGHT_AXIS = "Reverse right axis"
+    LAUNCH_CTRL_LEFT_MASTER = "Launch control (master left paddle)"
+    LAUNCH_CTRL_RIGHT_MASTER = "Launch control (master right paddle)"
 
 install(EN)

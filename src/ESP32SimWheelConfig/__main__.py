@@ -133,7 +133,9 @@ def _refresh_available_devices():
                 ui.label(sim_wheel.product_name).classes("text-overline")
                 ui.label(sim_wheel.manufacturer).classes("font-thin")
                 ui.label(f"S/N: {sim_wheel.device_id:X}").classes("font-thin")
-                ui.label(f"VID: {sim_wheel.vid:X}, PID: {sim_wheel.pid:X}").classes("font-thin")
+                ui.label(f"VID: {sim_wheel.vid:X}, PID: {sim_wheel.pid:X}").classes(
+                    "font-thin"
+                )
                 ui.button(_(STR.SELECT), icon="task_alt").classes("self-center").on(
                     "click", lambda path=sim_wheel.path: select_device(path)
                 )
@@ -446,7 +448,14 @@ clutch_paddles_group.tailwind.font_weight("bold")
 clutch_paddles_group.bind_visibility_from(device, "has_clutch")
 with clutch_paddles_group:
     ui.toggle(
-        {0: _(STR.CLUTCH), 1: _(STR.AXIS), 2: _(STR.ALT_MODE), 3: _(STR.BUTTON)}
+        {
+            0: _(STR.CLUTCH),
+            1: _(STR.AXIS),
+            2: _(STR.ALT_MODE),
+            3: _(STR.BUTTON),
+            4: _(STR.LAUNCH_CTRL_LEFT_MASTER),
+            5: _(STR.LAUNCH_CTRL_RIGHT_MASTER),
+        }
     ).classes("self-center").bind_value(device, "clutch_working_mode")
     ui.label(_(STR.BITE_POINT)).classes("self-center").tailwind.font_size("sm")
     bite_point_slider = ui.slider(min=0, max=254, step=1)
@@ -454,7 +463,9 @@ with clutch_paddles_group:
     bite_point_slider.bind_enabled_from(
         device,
         "clutch_working_mode",
-        backward=lambda value: (value == esp32simwheel.ClutchPaddlesWorkingMode.CLUTCH),
+        backward=lambda value: (value == esp32simwheel.ClutchPaddlesWorkingMode.CLUTCH)
+        or (value == esp32simwheel.ClutchPaddlesWorkingMode.LAUNCH_CONTROL_LEFT)
+        or (value == esp32simwheel.ClutchPaddlesWorkingMode.LAUNCH_CONTROL_RIGHT),
     )
     bite_point_slider.on(
         "update:model-value",

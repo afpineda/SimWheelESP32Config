@@ -56,8 +56,11 @@ class ZH(Enum):
     CUSTOM_VID = "自定义供应商 ID （VID）"
     CUSTOM_PID = "自定义产品 ID （PID）"
     VID_PID_FORMAT = "16 位无符号整数"
-    CUSTOM_DISPLAY_NAME ="自定义显示名称（仅限 Windows）"
+    CUSTOM_DISPLAY_NAME = "自定义显示名称（仅限 Windows）"
     REVERSE_LEFT_AXIS = "反转左轴"
     REVERSE_RIGHT_AXIS = "反转右轴"
+    LAUNCH_CTRL_LEFT_MASTER = "發射控制（左主凸輪）"
+    LAUNCH_CTRL_RIGHT_MASTER = "發射控制（右主凸輪）"
+
 
 install(ZH)

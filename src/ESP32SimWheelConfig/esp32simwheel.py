@@ -81,16 +81,20 @@ class AnotherAppInterferesError(Exception):
 class ClutchPaddlesWorkingMode(IntEnum):
     """Working modes of clutch paddles.
 
-    CLUTCH : F1-style clutch
-    AXIS   : Independent analog axes
-    ALT    : Alternate mode
-    BUTTON : Regular buttons
+    CLUTCH               : F1-style clutch
+    AXIS                 : Independent analog axes
+    ALT                  : Alternate mode
+    BUTTON               : Regular buttons
+    LAUNCH_CONTROL_LEFT  : Launch control (left paddle is master)
+    LAUNCH_CONTROL_RIGHT : Launch control (right paddle is master)
     """
 
     CLUTCH = 0
     AXIS = 1
     ALT = 2
     BUTTON = 3
+    LAUNCH_CONTROL_LEFT = 4
+    LAUNCH_CONTROL_RIGHT = 5
 
 
 ###############################################################################
