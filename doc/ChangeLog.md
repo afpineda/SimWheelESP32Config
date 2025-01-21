@@ -1,5 +1,9 @@
 # Change log
 
+## 2.6.0
+
+- Support for "Launch control" (firmware version 6.10.0).
+
 ## 2.5.0
 
 - Updated to work with data version 1.4 (firmware version 6.4.0)
