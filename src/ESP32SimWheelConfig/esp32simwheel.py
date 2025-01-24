@@ -50,6 +50,7 @@ _REPORT2_SIZE_V1_3 = _REPORT2_SIZE_V1_3 + 3
 _REPORT3_SIZE_V1_0 = 4 + 1
 _REPORT3_SIZE_V1_1 = _REPORT3_SIZE_V1_0 + 1
 _REPORT3_SIZE_V1_2 = _REPORT3_SIZE_V1_1 + 1
+_REPORT3_SIZE_V1_5 = _REPORT3_SIZE_V1_2 + 1
 _REPORT4_SIZE_V1_1 = 3 + 1
 _REPORT5_SIZE_V1_2 = 6 + 1
 _MAX_REPORT_SIZE = 25
@@ -65,7 +66,7 @@ _CAP_ROTARY_ENCODERS = 10  # has rotary encoders
 
 # Data version
 _SUPPORTED_DATA_MAJOR_VERSION = 1
-_SUPPORTED_DATA_MINOR_VERSION = 4
+_SUPPORTED_DATA_MINOR_VERSION = 5
 
 # Simple commands
 _CMD_AXIS_RECALIBRATE = 1
@@ -76,9 +77,6 @@ _CMD_REVERSE_LEFT_AXIS = 5
 _CMD_REVERSE_RIGHT_AXIS = 6
 _CMD_SHOW_PIXELS = 7
 _CMD_RESET_PIXELS = 8
-_CMD_ENCODER_PULSE_X1 = 9
-_CMD_ENCODER_PULSE_X2 = 10
-_CMD_ENCODER_PULSE_X3 = 11
 
 ###############################################################################
 
@@ -205,7 +203,9 @@ class SimWheel:
     def _get_config_report(self):
         """Read a device configuration feature report (id #3)."""
         report3 = bytes(self._hid.get_feature_report(_RID_CONFIG, _MAX_REPORT_SIZE))
-        if self.__data_minor_version >= 2:
+        if self.__data_minor_version >= 5:
+            return struct.unpack("<BBBBBBB", report3[1:_REPORT3_SIZE_V1_5])
+        elif self.__data_minor_version >= 2:
             return struct.unpack("<BBBBBB", report3[1:_REPORT3_SIZE_V1_2])
         elif self.__data_minor_version == 1:
             return struct.unpack("<BBBBB", report3[1:_REPORT3_SIZE_V1_1])
@@ -214,7 +214,7 @@ class SimWheel:
 
     def _send_config_report(self, data: bytes):
         """Writes a device configuration feature report (id #3)."""
-        aux = bytearray(_REPORT3_SIZE_V1_2)
+        aux = bytearray(_REPORT3_SIZE_V1_5)
         aux[0] = _RID_CONFIG
         aux[1] = data[0]
         aux[2] = data[1]
@@ -224,7 +224,11 @@ class SimWheel:
             aux[5] = data[4]
         if self.__data_minor_version >= 2:
             aux[6] = data[5]
-        if self.__data_minor_version >= 2:
+        if self.__data_minor_version >= 5:
+            aux[7] = data[6]
+        if self.__data_minor_version >= 5:
+            self._hid.send_feature_report(aux[0:_REPORT3_SIZE_V1_5])
+        elif self.__data_minor_version >= 2:
             self._hid.send_feature_report(aux[0:_REPORT3_SIZE_V1_2])
         elif self.__data_minor_version == 1:
             self._hid.send_feature_report(aux[0:_REPORT3_SIZE_V1_1])
@@ -237,7 +241,9 @@ class SimWheel:
         """Send a simple command to the device."""
         if self._is_ready():
             try:
-                self._send_config_report(bytes([0xFF, 0xFF, 0xFF, command, 0xFF, 0xFF]))
+                self._send_config_report(
+                    bytes([0xFF, 0xFF, 0xFF, command, 0xFF, 0xFF, 0xFF])
+                )
             except Exception:
                 self.close()
 
@@ -425,7 +431,7 @@ class SimWheel:
         if self._is_ready():
             try:
                 self._send_config_report(
-                    bytes([int(mode), 0xFF, 0xFF, 0xFF, 0xFF, 0xFF])
+                    bytes([int(mode), 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF])
                 )
             except Exception:
                 self.close()
@@ -455,7 +461,7 @@ class SimWheel:
         if self._is_ready():
             try:
                 self._send_config_report(
-                    bytes([0xFF, int(mode), 0xFF, 0xFF, 0xFF, 0xFF])
+                    bytes([0xFF, int(mode), 0xFF, 0xFF, 0xFF, 0xFF, 0xFF])
                 )
             except Exception:
                 self.close()
@@ -485,7 +491,9 @@ class SimWheel:
             raise ValueError("Bite point not in the range 0..254")
         if self._is_ready():
             try:
-                self._send_config_report(bytes([0xFF, 0xFF, value, 0xFF, 0xFF, 0xFF]))
+                self._send_config_report(
+                    bytes([0xFF, 0xFF, value, 0xFF, 0xFF, 0xFF, 0xFF])
+                )
             except Exception:
                 self.close()
 
@@ -514,7 +522,7 @@ class SimWheel:
         if self._is_ready():
             try:
                 self._send_config_report(
-                    bytes([0xFF, 0xFF, 0xFF, 0xFF, int(mode), 0xFF])
+                    bytes([0xFF, 0xFF, 0xFF, 0xFF, int(mode), 0xFF, 0xFF])
                 )
             except Exception:
                 self.close()
@@ -628,6 +636,29 @@ class SimWheel:
             except Exception:
                 self.close()
         return None
+
+    @property
+    def pulse_width_multiplier(self) -> int:
+        """Pulse width multiplier for rotary encoders."""
+        try:
+            report = self._get_config_report()
+            if len(report) >= 7:
+                return int(report[6])
+            else:
+                return 1
+        except Exception:
+            self.close()
+            return 1
+
+    @pulse_width_multiplier.setter
+    def pulse_width_multiplier(self, value: int):
+        if self._is_ready():
+            try:
+                self._send_config_report(
+                    bytes([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, int(value)])
+                )
+            except Exception:
+                self.close()
 
     def recalibrate_analog_axes(self):
         """Force auto-calibration of analog clutch paddles (if available)."""
@@ -820,11 +851,6 @@ class SimWheel:
         """Reverse the polarity of the right analog axis."""
         self._send_simple_command(_CMD_REVERSE_RIGHT_AXIS)
 
-    def set_pulse_multiplier(self, value: int):
-        """Set the pulse multiplier for rotary encoders."""
-        if (value > 0) and (value < 4):
-            self._send_simple_command(_CMD_ENCODER_PULSE_X1 + value -1)
-
     def serialize(self, all: bool = False) -> dict:
         """Returns a dictionary containing current device settings
 
@@ -926,6 +952,7 @@ if __name__ == "__main__":
         print(f"Custom VID: {sim_wheel.custom_vid}")
         print(f"Custom PID: {sim_wheel.custom_pid}")
         print(f"Security lock: {sim_wheel.is_read_only}")
+        print(f"Pulse width multiplier: {sim_wheel.pulse_width_multiplier}")
         print("Please, wait while loading user settings...")
         print(sim_wheel.serialize(all=True))
     print("Done.")

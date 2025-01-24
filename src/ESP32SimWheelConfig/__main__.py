@@ -377,7 +377,6 @@ async def reverse_right_axis_click():
     except Exception:
         notify_done(False)
 
-
 ##################################################################################################
 
 # Top header
@@ -493,7 +492,6 @@ with clutch_paddles_group:
             on_click=reverse_right_axis_click,
         ).bind_visibility_from(device, "has_analog_clutch_paddles")
 
-
 ## Battery group
 
 battery_group = ui.expansion(_(STR.BATTERY), value=True, icon="battery_full")
@@ -537,6 +535,23 @@ with buttons_map_group:
             "stopEditingWhenCellsLoseFocus": True,
         }
     ).on("cellValueChanged", buttons_map_value_change)
+
+## Rotary encoders group
+
+rotary_encoders_group = ui.expansion(_(STR.ROTARY_ENCODERS), value=False, icon="360")
+rotary_encoders_group.classes(DEFAULT_GROUP_CLASSES)
+rotary_encoders_group.tailwind.font_weight("bold")
+rotary_encoders_group.bind_visibility_from(device, "has_rotary_encoders")
+with rotary_encoders_group:
+    with ui.row().classes("self-center"):
+        ui.label(_(STR.PULSE_WIDTH)).classes("self-center").tailwind.font_size("sm")
+        ui.number(
+            min=1,
+            max=254,
+            step=1,
+            precision=0,
+            prefix="x",
+        ).bind_value(device, "pulse_width_multiplier")
 
 ## Profile group
 

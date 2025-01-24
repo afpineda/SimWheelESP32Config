@@ -1,6 +1,7 @@
-# Configuration app for ESP32-based open-source sim wheels / button boxes
+# Configuration app for open source ESP32-based sim wheels / button boxes
 
-A companion app for [ESP32 based open-source wireless steering wheel](https://github.com/afpineda/OpenSourceSimWheelESP32).
+A companion app for the
+[open source ESP32-based wireless steering wheel or button box](https://github.com/afpineda/OpenSourceSimWheelESP32).
 
 ![Screenshot](./resources/Screenshot.png)
 
@@ -12,8 +13,9 @@ A companion app for [ESP32 based open-source wireless steering wheel](https://gi
 - Set clutch bite point.
 - Force auto-calibration of analog clutch paddles.
 - Force battery auto-calibration (not available if the battery was "factory-calibrated" previously).
+- For rotary encoders, set the pulse width multiplier.
 - Map hardware buttons to user-defined HID buttons.
-- Supports all firmware versions to date (data versions 1.0 to 1.4).
+- Supports all firmware versions to date (data versions 1.0 to 1.5).
 - Rename device (Windows and BLE, only)
 - Set a custom VID and/or PID (BLE only)
 - Reverse axis polarity (in analog clutch paddles only)

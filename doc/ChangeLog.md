@@ -1,5 +1,10 @@
 # Change log
 
+## 2.7.0
+
+- Support for custom pulse width multipliers for rotary encoders.
+- Up to date with data version 1.5 (firmware version 6.11.0).
+
 ## 2.6.0
 
 - Support for "Launch control" (firmware version 6.10.0).

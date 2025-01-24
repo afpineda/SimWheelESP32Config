@@ -63,6 +63,8 @@ class ES(Enum):
     REVERSE_RIGHT_AXIS = "Invertir eje derecho"
     LAUNCH_CTRL_LEFT_MASTER = "Control de lanzada (leva maestra izquierda)"
     LAUNCH_CTRL_RIGHT_MASTER = "Control de lanzada (leva maestra derecha)"
+    ROTARY_ENCODERS = "Codificadores rotativos"
+    PULSE_WIDTH = "Ancho de pulso"
 
 
 install(ES)

@@ -61,5 +61,7 @@ class EN(Enum):
     REVERSE_RIGHT_AXIS = "Reverse right axis"
     LAUNCH_CTRL_LEFT_MASTER = "Launch control (master left paddle)"
     LAUNCH_CTRL_RIGHT_MASTER = "Launch control (master right paddle)"
+    ROTARY_ENCODERS = "Rotary encoders"
+    PULSE_WIDTH = "Pulse width"
 
 install(EN)

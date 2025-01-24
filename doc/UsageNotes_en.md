@@ -13,29 +13,43 @@ in order for this app to detect them.
 Click on the "drawer" button on the top-left corner.
 Available devices will be automatically scanned and listed.
 If your device is not connected yet, connect it, wait a second, and
-click on the "refresh" button.
+click on the `🔄 Refresh` button.
 
 Note that devices with no user-configurable settings will never show up.
 
-Click on the "Select" button in order to connect to that device.
+Click on the `✅ Select` button in order to connect to that device.
 
 ## User settings
 
-Only **user-configurable** settings will show up, which depends on your device capabilities.
+Only **user-configurable** settings will show up,
+which depends on your device capabilities.
 
 ## Security lock
 
-You can activate or deactivate the security lock on your device by pressing a specific combination of buttons.
+You can activate or deactivate the security lock on your device
+by pressing a specific combination of buttons.
 This program will display a warning,
-and any attempt to modify the configuration will be unsuccessful if the security lock is activated.
+and any attempt to modify the configuration will be unsuccessful
+if the security lock is activated.
 
-## "Buttons map"
+## Pulse width multiplier for rotary encoders
 
-- Click "Reload" to download current map from the device (may take a few seconds).
-- Changes are immediately applied, but **not** automatically saved to the device.
-- Click "Save" to make any change available after power off.
-- Click "Defaults" to revert to "factory defaults".
-- Button numbers are 0-based. For example, button #0 is the first button.
+A low value increases the probability of missed rotations on the host computer,
+but decreases the probability of missed rotations on the device
+when several consecutive rotations are accumulated.
+A high value has the opposite effect.
+
+Increase it if the host computer loses rotations occasionally,
+but keep it as low as possible.
+
+## Button map
+
+- Click `🔄 Reload` to download the current map from the device (may take a few seconds).
+- Changes are applied immediately,
+  but **not** saved automatically.
+- Click `💾 Save` to make any changes available after power off.
+- Click `🏭 Defaults` to revert to "factory defaults".
+- Button #0 is the first button.
   Note that the following button numbers have a special meaning in Windows:
   - *00*: "A" button
   - *01*: "B" button
@@ -45,19 +59,18 @@ and any attempt to modify the configuration will be unsuccessful if the security
   - *05*: "RB" button (should be reserved for the right shift paddle)
   - *06*: "Back" button
   - *07*: "Start" button.
-- "Firmware-defined" button numbers are fixed and hardware-dependant.
-- The "user-defined" button number is reported to the hosting PC when the
+- The "Firmware-defined" button numbers are fixed and depend on the hardware.
+- The "user-defined" button number is sent to the hosting PC when the
   corresponding "firmware-defined" button is pressed.
   By default, this is the same as the "firmware-defined" button number.
 - The "user-defined" button number in "alt mode" is reported to the hosting PC when the
-  corresponding "firmware-defined" button is pressed and "alternate mode" is engaged.
-  By default, this is the same as the "firmware-defined" button number plus 64.
-- Any user-defined button number is in the range from 0 to 127 (inclusive), which is the absolute maximum
-  count of buttons supported by the operating system.
+  corresponding "firmware-defined" button is pressed and the *alternate mode* is engaged.
+  By default, this is equal to the "firmware-defined" button number plus 64.
+- Each user-defined button number ranges from 0 to 127 (inclusive).
 
 ## Custom hardware ID and display name
 
-Available on Bluetooth devices, only.
+Available on Bluetooth devices only.
 
 If you have two or more BLE devices using ESP32 open simwheel firmware,
 **all of them will show the same display name, because they share the same hardware ID**.
