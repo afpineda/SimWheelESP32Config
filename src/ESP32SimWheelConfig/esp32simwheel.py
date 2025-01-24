@@ -61,10 +61,24 @@ _CAP_ALT = 2  # has "ALT" buttons
 _CAP_DPAD = 3  # has a directional pad
 _CAP_BATTERY = 4  # battery-operated
 _CAP_BATTERY_CALIBRATION_AVAILABLE = 5  # has battery calibration data
+_CAP_ROTARY_ENCODERS = 10  # has rotary encoders
 
 # Data version
 _SUPPORTED_DATA_MAJOR_VERSION = 1
 _SUPPORTED_DATA_MINOR_VERSION = 4
+
+# Simple commands
+_CMD_AXIS_RECALIBRATE = 1
+_CMD_BATT_RECALIBRATE = 2
+_CMD_RESET_BUTTONS_MAP = 3
+_CMD_SAVE_NOW = 4
+_CMD_REVERSE_LEFT_AXIS = 5
+_CMD_REVERSE_RIGHT_AXIS = 6
+_CMD_SHOW_PIXELS = 7
+_CMD_RESET_PIXELS = 8
+_CMD_ENCODER_PULSE_X1 = 9
+_CMD_ENCODER_PULSE_X2 = 10
+_CMD_ENCODER_PULSE_X3 = 11
 
 ###############################################################################
 
@@ -219,6 +233,14 @@ class SimWheel:
         else:
             raise RuntimeError("Unsupported data version")
 
+    def _send_simple_command(self, command: int):
+        """Send a simple command to the device."""
+        if self._is_ready():
+            try:
+                self._send_config_report(bytes([0xFF, 0xFF, 0xFF, command, 0xFF, 0xFF]))
+            except Exception:
+                self.close()
+
     def _get_buttons_map_report(self):
         """Read a buttons map feature report (id #4)."""
         if self.__data_minor_version >= 1:
@@ -341,6 +363,14 @@ class SimWheel:
             return False
 
     @property
+    def has_rotary_encoders(self) -> bool:
+        """Returns True if this device has configurable rotary encoders."""
+        if self._is_ready():
+            return bool((1 << _CAP_ROTARY_ENCODERS) & self._capability_flags)
+        else:
+            return False
+
+    @property
     def battery_calibration_available(self) -> bool:
         """Returns True if this device is able to auto-calibrate battery's state of charge."""
         if self._is_ready():
@@ -395,7 +425,7 @@ class SimWheel:
         if self._is_ready():
             try:
                 self._send_config_report(
-                    bytes([int(mode), 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF])
+                    bytes([int(mode), 0xFF, 0xFF, 0xFF, 0xFF, 0xFF])
                 )
             except Exception:
                 self.close()
@@ -425,7 +455,7 @@ class SimWheel:
         if self._is_ready():
             try:
                 self._send_config_report(
-                    bytes([0xFF, int(mode), 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF])
+                    bytes([0xFF, int(mode), 0xFF, 0xFF, 0xFF, 0xFF])
                 )
             except Exception:
                 self.close()
@@ -455,9 +485,7 @@ class SimWheel:
             raise ValueError("Bite point not in the range 0..254")
         if self._is_ready():
             try:
-                self._send_config_report(
-                    bytes([0xFF, 0xFF, value, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF])
-                )
+                self._send_config_report(bytes([0xFF, 0xFF, value, 0xFF, 0xFF, 0xFF]))
             except Exception:
                 self.close()
 
@@ -486,7 +514,7 @@ class SimWheel:
         if self._is_ready():
             try:
                 self._send_config_report(
-                    bytes([0xFF, 0xFF, 0xFF, 0xFF, int(mode), 0xFF, 0xFF, 0xFF, 0xFF])
+                    bytes([0xFF, 0xFF, 0xFF, 0xFF, int(mode), 0xFF])
                 )
             except Exception:
                 self.close()
@@ -603,46 +631,22 @@ class SimWheel:
 
     def recalibrate_analog_axes(self):
         """Force auto-calibration of analog clutch paddles (if available)."""
-        if self._is_ready():
-            try:
-                self._send_config_report(
-                    bytes([0xFF, 0xFF, 0xFF, 1, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF])
-                )
-            except Exception:
-                self.close()
+        self._send_simple_command(_CMD_AXIS_RECALIBRATE)
 
     def recalibrate_battery(self):
         """Force auto-calibration of battery's state of charge (if available)."""
-        if self._is_ready():
-            try:
-                self._send_config_report(
-                    bytes([0xFF, 0xFF, 0xFF, 2, 0xFF, 0xFFFF, 0xFFFF])
-                )
-            except Exception:
-                self.close()
+        self._send_simple_command(_CMD_BATT_RECALIBRATE)
 
     def reset_buttons_map(self):
         """Return user-defined buttons map to factory defaults.
 
         No effect if this feature is not supported.
         """
-        if self._is_ready():
-            try:
-                self._send_config_report(
-                    bytes([0xFF, 0xFF, 0xFF, 3, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF])
-                )
-            except Exception:
-                self.close()
+        self._send_simple_command(_CMD_RESET_BUTTONS_MAP)
 
     def save_now(self):
         """Save all user settings to the device's internal flash memory."""
-        if self._is_ready():
-            try:
-                self._send_config_report(
-                    bytes([0xFF, 0xFF, 0xFF, 4, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF])
-                )
-            except Exception:
-                self.close()
+        self._send_simple_command(_CMD_SAVE_NOW)
 
     def get_button_map(self, raw_input_number: int):
         """Returns a user-defined button mapping.
@@ -809,18 +813,17 @@ class SimWheel:
                 self.close()
 
     def reverse_left_axis(self):
-        if self._is_ready():
-            try:
-                self._send_config_report(bytes([0x01, 0xFF, 0xFF, 0x05, 0xFF, 0xFF]))
-            except Exception:
-                self.close()
+        """Reverse the polarity of the left analog axis."""
+        self._send_simple_command(_CMD_REVERSE_LEFT_AXIS)
 
     def reverse_right_axis(self):
-        if self._is_ready():
-            try:
-                self._send_config_report(bytes([0x01, 0xFF, 0xFF, 0x06, 0xFF, 0xFF]))
-            except Exception:
-                self.close()
+        """Reverse the polarity of the right analog axis."""
+        self._send_simple_command(_CMD_REVERSE_RIGHT_AXIS)
+
+    def set_pulse_multiplier(self, value: int):
+        """Set the pulse multiplier for rotary encoders."""
+        if (value > 0) and (value < 4):
+            self._send_simple_command(_CMD_ENCODER_PULSE_X1 + value -1)
 
     def serialize(self, all: bool = False) -> dict:
         """Returns a dictionary containing current device settings
