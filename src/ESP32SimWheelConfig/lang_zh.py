@@ -61,7 +61,7 @@ class ZH(Enum):
     REVERSE_RIGHT_AXIS = "反转右轴"
     LAUNCH_CTRL_LEFT_MASTER = "發射控制（左主凸輪）"
     LAUNCH_CTRL_RIGHT_MASTER = "發射控制（右主凸輪）"
-    ROTARY_ENCODERS = "旋轉編碼器"
+    ROTARY_ENCODERS = "旋转编码器"
     PULSE_WIDTH = "脈衝寬"
 
 
