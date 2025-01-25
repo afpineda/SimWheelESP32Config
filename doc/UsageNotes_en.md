@@ -34,13 +34,15 @@ if the security lock is activated.
 
 ## Pulse width multiplier for rotary encoders
 
-A low value increases the probability of missed rotations on the host computer,
-but decreases the probability of missed rotations on the device
-when several consecutive rotations are accumulated.
-A high value has the opposite effect.
+A high value reduces the likelihood of missed rotations on the host computer,
+but increases the likelihood of missed rotations on the device
+if several consecutive rotations are accumulated.
+A low value has the opposite effect.
 
-Increase it if the host computer loses rotations occasionally,
+Increase the pulse width multiplier if the host computer occasionally misses rotations,
 but keep it as low as possible.
+
+Changes are saved to flash memory.
 
 ## Button map
 
