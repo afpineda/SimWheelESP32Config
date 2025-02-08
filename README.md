@@ -15,7 +15,7 @@ A companion app for the
 - Force battery auto-calibration (not available if the battery was "factory-calibrated" previously).
 - For rotary encoders, set the pulse width multiplier.
 - Map hardware buttons to user-defined HID buttons.
-- Supports all firmware versions to date (data versions 1.0 to 1.5).
+- Supports all firmware versions to date (data versions 1.0 to 1.6).
 - Rename device (Windows and BLE, only)
 - Set a custom VID and/or PID (BLE only)
 - Reverse axis polarity (in analog clutch paddles only)
