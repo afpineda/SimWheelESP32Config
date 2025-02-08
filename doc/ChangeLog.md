@@ -1,5 +1,9 @@
 # Change log
 
+## 2.7.1
+
+- Up to date with data version 1.6 (firmware version 6.11.3).
+
 ## 2.7.0
 
 - Support for custom pulse width multipliers for rotary encoders.
