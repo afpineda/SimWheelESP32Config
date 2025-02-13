@@ -41,18 +41,25 @@ _RID_CAPABILITIES = 2
 _RID_CONFIG = 3
 _RID_BUTTONS_MAP = 4
 _RID_HARDWARE_ID = 5
+_RID_PIXEL_CONTROL_ID = 30
 
 # Note: must increase data size in 1 to make room for the report-ID field
 _REPORT2_SIZE_V1_0 = 8 + 1
 _REPORT2_SIZE_V1_1 = _REPORT2_SIZE_V1_0 + 8
 _REPORT2_SIZE_V1_3 = _REPORT2_SIZE_V1_1 + 1
-_REPORT2_SIZE_V1_3 = _REPORT2_SIZE_V1_3 + 3
+_REPORT2_SIZE_V1_4 = _REPORT2_SIZE_V1_3 + 3
+
 _REPORT3_SIZE_V1_0 = 4 + 1
 _REPORT3_SIZE_V1_1 = _REPORT3_SIZE_V1_0 + 1
 _REPORT3_SIZE_V1_2 = _REPORT3_SIZE_V1_1 + 1
 _REPORT3_SIZE_V1_5 = _REPORT3_SIZE_V1_2 + 1
+
 _REPORT4_SIZE_V1_1 = 3 + 1
+
 _REPORT5_SIZE_V1_2 = 6 + 1
+
+_REPORT30_SIZE_V1_4 = 6 + 1
+
 _MAX_REPORT_SIZE = 25
 
 # Capability flags
@@ -112,6 +119,17 @@ class ClutchPaddlesWorkingMode(IntEnum):
 ###############################################################################
 
 
+class PixelGroup(IntEnum):
+    """Pixel groups"""
+
+    GRP_TELEMETRY = 0
+    GRP_BACKLIGHTS = 1
+    GRP_INDIVIDUAL = 2
+
+
+###############################################################################
+
+
 class SimWheel:
     """A class to represent an ESP32 open-source sim wheel or button box."""
 
@@ -126,6 +144,7 @@ class SimWheel:
         self._capability_flags = 0
         self.__vid = vid
         self.__pid = pid
+        self.__pixel_count = [0, 0, 0]
 
     def __del__(self):
         self.close()
@@ -177,6 +196,24 @@ class SimWheel:
                 self.device_id = data[0]
             else:
                 self.device_id = 0
+
+            # At data version 1.3, get max FPS
+            if len(report2) >= _REPORT2_SIZE_V1_3:
+                data = struct.unpack(
+                    "<B", report2[_REPORT2_SIZE_V1_1:_REPORT2_SIZE_V1_3]
+                )
+                self.max_fps = data[0]
+            else:
+                self.max_fps = 0
+
+            # At data version 1.4, get pixel count
+            if len(report2) >= _REPORT2_SIZE_V1_3:
+                data = struct.unpack(
+                    "<BBB", report2[_REPORT2_SIZE_V1_3:_REPORT2_SIZE_V1_4]
+                )
+                self.__pixel_count[PixelGroup.GRP_TELEMETRY] = data[0]
+                self.__pixel_count[PixelGroup.GRP_BACKLIGHTS] = data[1]
+                self.__pixel_count[PixelGroup.GRP_INDIVIDUAL] = data[2]
 
             # Confirm the "configuration" report is available
             self._hid.get_feature_report(_RID_CONFIG, _MAX_REPORT_SIZE)
@@ -265,6 +302,18 @@ class SimWheel:
         aux[2] = data[1]
         aux[3] = data[2]
         self._hid.send_feature_report(aux)
+
+    def _send_pixel_control_report(self, data: bytes):
+        """Writes a pixel control output report."""
+        aux = bytearray(_REPORT30_SIZE_V1_4)
+        aux[0] = _RID_PIXEL_CONTROL_ID
+        aux[1] = data[0]
+        aux[2] = data[1]
+        aux[3] = data[2]
+        aux[4] = data[3]
+        aux[5] = data[4]
+        aux[6] = data[5]
+        self._hid.write(aux)
 
     def _get_hardware_id_report(self):
         """Read a custom hardware ID feature report (id #5)."""
@@ -359,6 +408,16 @@ class SimWheel:
             return bool((1 << _CAP_ALT) & self._capability_flags)
         else:
             return False
+
+    @property
+    def has_pixel_control(self) -> bool:
+        """Returns True if this device has pixels."""
+        self._open()
+        return (
+            (self.__pixel_count[PixelGroup.GRP_TELEMETRY] > 0)
+            or (self.__pixel_count[PixelGroup.GRP_BACKLIGHTS] > 0)
+            or (self.__pixel_count[PixelGroup.GRP_INDIVIDUAL] > 0)
+        )
 
     @property
     def has_battery(self) -> bool:
@@ -851,6 +910,55 @@ class SimWheel:
         """Reverse the polarity of the right analog axis."""
         self._send_simple_command(_CMD_REVERSE_RIGHT_AXIS)
 
+    def pixel_count(self, group: PixelGroup) -> int:
+        """Number of pixels in a group"""
+        return self.__pixel_count[group]
+
+    def pixel_set(
+        self, group: PixelGroup, index: int, red: int, green: int, blue: int
+    ) -> None:
+        """Set pixel color in a group"""
+        if (
+            self._is_ready()
+            and (group < 3)
+            and (index >= 0)
+            and (index < self.__pixel_count[group])
+        ):
+            try:
+                self._send_pixel_control_report(
+                    bytes([group, index, blue, green, red, 0x00])
+                )
+            except Exception:
+                self.close()
+
+    def pixel_show(self) -> None:
+        """Show all pixels (in all groups) at once"""
+        if self._is_ready():
+            try:
+                if self.data_minor_version >= 6:
+                    self._send_pixel_control_report(
+                        bytes([0xFF, 0x00, 0x00, 0x00, 0x00, 0x00])
+                    )
+                else:
+                    self._send_simple_command(_CMD_SHOW_PIXELS)
+
+            except Exception:
+                self.close()
+
+    def pixel_reset(self) -> None:
+        """Turn off all pixels (in all groups) at once"""
+        if self._is_ready():
+            try:
+                if self.data_minor_version >= 6:
+                    self._send_pixel_control_report(
+                        bytes([0xFE, 0x00, 0x00, 0x00, 0x00, 0x00])
+                    )
+                else:
+                    self._send_simple_command(_CMD_RESET_PIXELS)
+
+            except Exception:
+                self.close()
+
     def serialize(self, all: bool = False) -> dict:
         """Returns a dictionary containing current device settings
 
@@ -952,7 +1060,17 @@ if __name__ == "__main__":
         print(f"Custom VID: {sim_wheel.custom_vid}")
         print(f"Custom PID: {sim_wheel.custom_pid}")
         print(f"Security lock: {sim_wheel.is_read_only}")
+        print(f"Max FPS: {sim_wheel.max_fps}")
+        tel_pc = sim_wheel.pixel_count(PixelGroup.GRP_TELEMETRY)
+        bck_pc = sim_wheel.pixel_count(PixelGroup.GRP_BACKLIGHTS)
+        ind_pc = sim_wheel.pixel_count(PixelGroup.GRP_INDIVIDUAL)
+        print(f"Led count {tel_pc} / {bck_pc} / {ind_pc}")
+        sim_wheel.pixel_set(PixelGroup.GRP_TELEMETRY,0,255,0,0);
+        sim_wheel.pixel_set(PixelGroup.GRP_BACKLIGHTS,0,255,0,0);
+        sim_wheel.pixel_set(PixelGroup.GRP_INDIVIDUAL,0,255,0,0);
+        sim_wheel.pixel_show()
         print(f"Pulse width multiplier: {sim_wheel.pulse_width_multiplier}")
         print("Please, wait while loading user settings...")
         print(sim_wheel.serialize(all=True))
+        sim_wheel.pixel_reset()
     print("Done.")
