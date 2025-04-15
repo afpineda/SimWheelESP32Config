@@ -446,7 +446,7 @@ clutch_paddles_group.classes(DEFAULT_GROUP_CLASSES)
 clutch_paddles_group.tailwind.font_weight("bold")
 clutch_paddles_group.bind_visibility_from(device, "has_clutch")
 with clutch_paddles_group:
-    ui.toggle(
+    ui.radio(
         {
             0: _(STR.CLUTCH),
             1: _(STR.AXIS),
@@ -455,7 +455,7 @@ with clutch_paddles_group:
             4: _(STR.LAUNCH_CTRL_LEFT_MASTER),
             5: _(STR.LAUNCH_CTRL_RIGHT_MASTER),
         }
-    ).classes("self-center").bind_value(device, "clutch_working_mode")
+    ).classes("self-center").bind_value(device, "clutch_working_mode").style("font-size: 75%").props("size=xs")
     ui.label(_(STR.BITE_POINT)).classes("self-center").tailwind.font_size("sm")
     bite_point_slider = ui.slider(min=0, max=254, step=1)
     bite_point_slider.bind_value_from(device, "bite_point")
