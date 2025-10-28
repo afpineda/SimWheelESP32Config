@@ -14,6 +14,7 @@
 # -------------------------- IMPORTANT NOTE --------------------------------
 
 import os
+import shutil
 import subprocess
 from pathlib import Path
 import nicegui
@@ -26,30 +27,28 @@ if exists(".gitignore") and exists(".gitattributes"):
 
     main_file = Path("src/ESP32SimWheelConfig/__main__.py")
     icons_file = Path("resources/MainIcons.ico")
-    sim_wheel_api_file = Path("src/ESP32SimWheelConfig/esp32simwheel.py")
     license_file = Path("./LICENSE")
+    app_name = "ESP32SimWheel"
+    output_folder = Path(f"./dist/{app_name}")
+    build_folder = Path(f"./build/{app_name}")
 
     cmd = [
-        "pyinstaller",
+        "nicegui-pack",
         f"{main_file}",  # your main file with ui.run()
         "--name",
-        "ESP32SimWheel",  # name of your app
-        #'--onefile',
-        "--windowed",  # prevent console appearing, only use with ui.run(native=True, ...)
-        "--add-data",
-        f"{Path(nicegui.__file__).parent}{os.pathsep}nicegui",
-        "--add-data",
-        f"{license_file}{os.pathsep}.",
-        "-i",
+        app_name,  # name of your app
+        "--windowed",  # prevent console from appearing, only use with ui.run(native=True, ...)
+        "--icon",
         f"{icons_file}",
-        "--hidden-import",
-        f"{sim_wheel_api_file}",
     ]
     print("Launching freezer: ")
     for s in cmd:
         print(s, end=" ")
     print("")
+    shutil.rmtree(output_folder, ignore_errors=True)
+    shutil.rmtree(build_folder, ignore_errors=True)
     subprocess.call(cmd)
+    shutil.copy(license_file, f"{output_folder}{os.sep}LICENSE.txt")
 
 else:
     print("ERROR: this script must run in the project root...")

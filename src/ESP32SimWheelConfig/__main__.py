@@ -122,6 +122,8 @@ def notify_done(result: bool = True):
         ui.notify(_(STR.ERROR), type="negative")
 
 
+available_devices_ph = None
+
 def _refresh_available_devices():
     print("Refreshing device list")
     available_devices_ph.clear()
@@ -381,248 +383,262 @@ async def reverse_right_axis_click():
 
 ##################################################################################################
 
-# Top header
+def main_page():
 
-with ui.header():
-    with ui.row():
-        ui.button(icon="menu").on("click", lambda: drawer.toggle()).props(
-            "flat color=white dense"
+    # Top header
+
+    with ui.header():
+        with ui.row():
+            ui.button(icon="menu").on("click", lambda: drawer.toggle()).props(
+                "flat color=white dense"
+            )
+            headerLabel = ui.label().classes(
+                "text-h3 align-middle tracking-wide ellipsis"
+            )
+            headerLabel.bind_text_from(
+                device,
+                "is_alive",
+                backward=lambda is_alive_value: (
+                    device.product_name if is_alive_value else _(STR.NO_DEVICE)
+                ),
+            )
+
+    # Drawer
+
+    drawer = ui.left_drawer(value=False).props("behavior=desktop")
+    drawer.on("show", refresh_available_devices)
+    with drawer:
+        with ui.row().classes("w-full"):
+            ui.label(_(STR.AVAILABLE_DEVICES)).classes("text-h7")
+            ui.space()
+            ui.button(icon="refresh").props("flat dense").on(
+                "click", refresh_available_devices, throttle=1
+            )
+        ui.separator()
+        global available_devices_ph
+        available_devices_ph = ui.column().classes("w-full justify-center")
+
+    # Main content
+
+    ## Security lock
+
+    read_only_notice = ui.label(_(STR.READ_ONLY_NOTICE))
+    read_only_notice.classes("text-lg text-red-600 text-lg self-center")
+    read_only_notice.bind_visibility_from(device, "is_read_only")
+
+    ## ALT buttons group
+
+    alt_buttons_group = ui.expansion(_(STR.ALT_BUTTONS), value=True, icon="touch_app")
+    alt_buttons_group.classes(DEFAULT_GROUP_CLASSES)
+    alt_buttons_group.bind_visibility_from(device, "has_alt_buttons")
+    with alt_buttons_group:
+        ui.toggle({True: _(STR.ALT_MODE), False: _(STR.REGULAR_BUTTON)}).bind_value(
+            device, "alt_buttons_working_mode"
+        ).classes("self-center")
+
+    ## DPAD group
+
+    dpad_group = ui.expansion(_(STR.DPAD), value=True, icon="gamepad")
+    dpad_group.classes(DEFAULT_GROUP_CLASSES)
+    dpad_group.bind_visibility_from(device, "has_dpad")
+    with dpad_group:
+        ui.toggle({True: _(STR.NAV), False: _(STR.REGULAR_BUTTON)}).bind_value(
+            device, "dpad_working_mode"
+        ).classes("self-center")
+
+    ## Clutch paddles group
+
+    clutch_paddles_group = ui.expansion(
+        _(STR.CLUTCH_PADDLES), value=True, icon="garage"
+    )
+    clutch_paddles_group.classes(DEFAULT_GROUP_CLASSES)
+    clutch_paddles_group.bind_visibility_from(device, "has_clutch")
+    with clutch_paddles_group:
+        ui.radio(
+            {
+                0: _(STR.CLUTCH),
+                1: _(STR.AXIS),
+                2: _(STR.ALT_MODE),
+                3: _(STR.BUTTON),
+                4: _(STR.LAUNCH_CTRL_LEFT_MASTER),
+                5: _(STR.LAUNCH_CTRL_RIGHT_MASTER),
+            }
+        ).classes("self-center").bind_value(device, "clutch_working_mode").style(
+            "font-size: 75%"
+        ).props(
+            "size=xs"
         )
-        headerLabel = ui.label().classes("text-h3 align-middle tracking-wide ellipsis")
-        headerLabel.bind_text_from(
+        ui.label(_(STR.BITE_POINT)).classes("self-center text-sm")
+        bite_point_slider = ui.slider(min=0, max=254, step=1)
+        bite_point_slider.bind_value_from(device, "bite_point")
+        bite_point_slider.bind_enabled_from(
             device,
-            "is_alive",
-            backward=lambda is_alive_value: (
-                device.product_name if is_alive_value else _(STR.NO_DEVICE)
-            ),
+            "clutch_working_mode",
+            backward=lambda value: (
+                value == esp32simwheel.ClutchPaddlesWorkingMode.CLUTCH
+            )
+            or (value == esp32simwheel.ClutchPaddlesWorkingMode.LAUNCH_CONTROL_LEFT)
+            or (value == esp32simwheel.ClutchPaddlesWorkingMode.LAUNCH_CONTROL_RIGHT),
         )
-
-# Drawer
-
-drawer = ui.left_drawer(value=False).props("behavior=desktop")
-drawer.on("show", refresh_available_devices)
-with drawer:
-    with ui.row().classes("w-full"):
-        ui.label(_(STR.AVAILABLE_DEVICES)).classes("text-h7")
-        ui.space()
-        ui.button(icon="refresh").props("flat dense").on(
-            "click", refresh_available_devices, throttle=1
+        bite_point_slider.on(
+            "update:model-value",
+            lambda e: set_bite_point(e.args),
+            throttle=0.25,
+            leading_events=False,
         )
-    ui.separator()
-    available_devices_ph = ui.column().classes("w-full justify-center")
-
-# Main content
-
-## Security lock
-
-read_only_notice = ui.label(_(STR.READ_ONLY_NOTICE))
-read_only_notice.classes("text-lg text-red-600 text-lg self-center")
-read_only_notice.bind_visibility_from(device, "is_read_only")
-
-## ALT buttons group
-
-alt_buttons_group = ui.expansion(_(STR.ALT_BUTTONS), value=True, icon="touch_app")
-alt_buttons_group.classes(DEFAULT_GROUP_CLASSES)
-alt_buttons_group.bind_visibility_from(device, "has_alt_buttons")
-with alt_buttons_group:
-    ui.toggle({True: _(STR.ALT_MODE), False: _(STR.REGULAR_BUTTON)}).bind_value(
-        device, "alt_buttons_working_mode"
-    ).classes("self-center")
-
-## DPAD group
-
-dpad_group = ui.expansion(_(STR.DPAD), value=True, icon="gamepad")
-dpad_group.classes(DEFAULT_GROUP_CLASSES)
-dpad_group.bind_visibility_from(device, "has_dpad")
-with dpad_group:
-    ui.toggle({True: _(STR.NAV), False: _(STR.REGULAR_BUTTON)}).bind_value(
-        device, "dpad_working_mode"
-    ).classes("self-center")
-
-## Clutch paddles group
-
-clutch_paddles_group = ui.expansion(_(STR.CLUTCH_PADDLES), value=True, icon="garage")
-clutch_paddles_group.classes(DEFAULT_GROUP_CLASSES)
-clutch_paddles_group.bind_visibility_from(device, "has_clutch")
-with clutch_paddles_group:
-    ui.radio(
-        {
-            0: _(STR.CLUTCH),
-            1: _(STR.AXIS),
-            2: _(STR.ALT_MODE),
-            3: _(STR.BUTTON),
-            4: _(STR.LAUNCH_CTRL_LEFT_MASTER),
-            5: _(STR.LAUNCH_CTRL_RIGHT_MASTER),
-        }
-    ).classes("self-center").bind_value(device, "clutch_working_mode").style(
-        "font-size: 75%"
-    ).props(
-        "size=xs"
-    )
-    ui.label(_(STR.BITE_POINT)).classes("self-center text-sm")
-    bite_point_slider = ui.slider(min=0, max=254, step=1)
-    bite_point_slider.bind_value_from(device, "bite_point")
-    bite_point_slider.bind_enabled_from(
-        device,
-        "clutch_working_mode",
-        backward=lambda value: (value == esp32simwheel.ClutchPaddlesWorkingMode.CLUTCH)
-        or (value == esp32simwheel.ClutchPaddlesWorkingMode.LAUNCH_CONTROL_LEFT)
-        or (value == esp32simwheel.ClutchPaddlesWorkingMode.LAUNCH_CONTROL_RIGHT),
-    )
-    bite_point_slider.on(
-        "update:model-value",
-        lambda e: set_bite_point(e.args),
-        throttle=0.25,
-        leading_events=False,
-    )
-    ui.label(_(STR.ANALOG_AXES)).classes("text-sm self-center").bind_visibility_from(
-        device, "has_analog_clutch_paddles"
-    )
-    ui.button(
-        _(STR.RECALIBRATE),
-        icon="autorenew",
-        on_click=lambda: device.recalibrate_analog_axes(),
-    ).bind_visibility_from(device, "has_analog_clutch_paddles").classes("self-center")
-    with ui.row().classes("self-center"):
-        btn_reverse_left_axis = ui.button(
-            _(STR.REVERSE_LEFT_AXIS),
-            icon="invert_colors",
-            on_click=reverse_left_axis_click,
+        ui.label(_(STR.ANALOG_AXES)).classes(
+            "text-sm self-center"
         ).bind_visibility_from(device, "has_analog_clutch_paddles")
-        btn_reverse_right_axis = ui.button(
-            _(STR.REVERSE_RIGHT_AXIS),
-            icon="invert_colors",
-            on_click=reverse_right_axis_click,
-        ).bind_visibility_from(device, "has_analog_clutch_paddles")
-
-## Battery group
-
-battery_group = ui.expansion(_(STR.BATTERY), value=True, icon="battery_full")
-battery_group.classes(DEFAULT_GROUP_CLASSES)
-battery_group.bind_visibility_from(device, "has_battery")
-with battery_group:
-    ui.label(_(STR.SOC)).classes("text-sm self-center")
-    ui.linear_progress(show_value=False).bind_value_from(
-        device, "battery_soc", backward=lambda v: 0 if (v == None) else v / 100
-    )
-    ui.button(
-        _(STR.RECALIBRATE),
-        icon="autorenew",
-        on_click=lambda: device.recalibrate_battery(),
-    ).bind_visibility_from(device, "battery_calibration_available").classes(
-        "self-center"
-    )
-
-## Buttons map group
-
-buttons_map_group = ui.expansion(_(STR.BUTTONS_MAP), value=False, icon="map")
-buttons_map_group.classes(DEFAULT_GROUP_CLASSES)
-buttons_map_group.bind_visibility_from(device, "has_buttons_map")
-with buttons_map_group:
-    with ui.row().classes("self-center"):
-        btn_map_reload = ui.button(
-            _(STR.RELOAD), icon="sync", on_click=reload_buttons_map
+        ui.button(
+            _(STR.RECALIBRATE),
+            icon="autorenew",
+            on_click=lambda: device.recalibrate_analog_axes(),
+        ).bind_visibility_from(device, "has_analog_clutch_paddles").classes(
+            "self-center"
         )
-        btn_map_save = ui.button(_(STR.SAVE), icon="save", on_click=save_now)
-        btn_map_defaults = ui.button(
-            _(STR.DEFAULTS), icon="factory", on_click=buttons_map_factory_defaults
+        with ui.row().classes("self-center"):
+            btn_reverse_left_axis = ui.button(
+                _(STR.REVERSE_LEFT_AXIS),
+                icon="invert_colors",
+                on_click=reverse_left_axis_click,
+            ).bind_visibility_from(device, "has_analog_clutch_paddles")
+            btn_reverse_right_axis = ui.button(
+                _(STR.REVERSE_RIGHT_AXIS),
+                icon="invert_colors",
+                on_click=reverse_right_axis_click,
+            ).bind_visibility_from(device, "has_analog_clutch_paddles")
+
+    ## Battery group
+
+    battery_group = ui.expansion(_(STR.BATTERY), value=True, icon="battery_full")
+    battery_group.classes(DEFAULT_GROUP_CLASSES)
+    battery_group.bind_visibility_from(device, "has_battery")
+    with battery_group:
+        ui.label(_(STR.SOC)).classes("text-sm self-center")
+        ui.linear_progress(show_value=False).bind_value_from(
+            device, "battery_soc", backward=lambda v: 0 if (v == None) else v / 100
+        )
+        ui.button(
+            _(STR.RECALIBRATE),
+            icon="autorenew",
+            on_click=lambda: device.recalibrate_battery(),
+        ).bind_visibility_from(device, "battery_calibration_available").classes(
+            "self-center"
         )
 
-    buttons_map_grid = ui.aggrid(
-        {
-            "columnDefs": __buttons_map_columns,
-            "rowData": buttons_map_data,
-            "rowSelection": "single",
-            "stopEditingWhenCellsLoseFocus": True,
-        }
-    ).on("cellValueChanged", buttons_map_value_change)
+    ## Buttons map group
 
-## Rotary encoders group
+    buttons_map_group = ui.expansion(_(STR.BUTTONS_MAP), value=False, icon="map")
+    buttons_map_group.classes(DEFAULT_GROUP_CLASSES)
+    buttons_map_group.bind_visibility_from(device, "has_buttons_map")
+    with buttons_map_group:
+        with ui.row().classes("self-center"):
+            btn_map_reload = ui.button(
+                _(STR.RELOAD), icon="sync", on_click=reload_buttons_map
+            )
+            btn_map_save = ui.button(_(STR.SAVE), icon="save", on_click=save_now)
+            btn_map_defaults = ui.button(
+                _(STR.DEFAULTS), icon="factory", on_click=buttons_map_factory_defaults
+            )
 
-rotary_encoders_group = ui.expansion(_(STR.ROTARY_ENCODERS), value=False, icon="360")
-rotary_encoders_group.classes(DEFAULT_GROUP_CLASSES)
-rotary_encoders_group.bind_visibility_from(device, "has_rotary_encoders")
-with rotary_encoders_group:
-    with ui.row().classes("self-center"):
-        ui.label(_(STR.PULSE_WIDTH)).classes("text-sm self-center")
-        ui.number(
-            min=1,
-            max=254,
-            step=1,
-            precision=0,
-            prefix="x",
-        ).bind_value(device, "pulse_width_multiplier")
+        buttons_map_grid = ui.aggrid(
+            {
+                "columnDefs": __buttons_map_columns,
+                "rowData": buttons_map_data,
+                "rowSelection": "single",
+                "stopEditingWhenCellsLoseFocus": True,
+            }
+        ).on("cellValueChanged", buttons_map_value_change)
 
-## Profile group
+    ## Rotary encoders group
 
-profile_group = ui.expansion(_(STR.LOCAL_PROFILE), value=False, icon="inventory_2")
-profile_group.classes(DEFAULT_GROUP_CLASSES)
-profile_group.bind_visibility_from(device, "is_alive")
-with profile_group:
-    check_profile_same_device = ui.checkbox(_(STR.CHECK_ID), value=True)
-    check_profile_same_device.classes("text-sm")
-    with check_profile_same_device:
-        ui.tooltip(_(STR.PROFILE_CHECK_TOOLTIP))
-    check_profile_buttons_map = ui.checkbox(
-        _(STR.INCLUDE_BTN_MAP), value=False
-    ).bind_visibility_from(device, "has_buttons_map")
-    with ui.row().classes("self-center"):
-        btn_load_profile = ui.button(
-            _(STR.LOAD), icon="file_upload", on_click=load_profile
-        )
-        btn_save_profile = ui.button(
-            _(STR.SAVE), icon="file_download", on_click=save_profile
-        )
-
-## Hardware ID group
-
-hardware_id_group = ui.expansion(
-    _(STR.CUSTOM_HARDWARE_ID), value=False, icon="fingerprint"
-)
-hardware_id_group.classes(DEFAULT_GROUP_CLASSES)
-hardware_id_group.bind_visibility_from(device, "has_custom_hw_id")
-with hardware_id_group:
-    read_only_notice = ui.label(_(STR.DANGER_ZONE)).classes(
-        "self-center text-lg text-red-600"
+    rotary_encoders_group = ui.expansion(
+        _(STR.ROTARY_ENCODERS), value=False, icon="360"
     )
-    check_not_an_asshole = ui.checkbox(_(STR.I_AM_NOT_AN_ASSHOLE), value=False)
-    check_not_an_asshole.style("font-size: 50%")
-    check_not_an_asshole.on("update:model-value", on_update_hardware_id)
-    display_name_input = ui.input(
-        label=_(STR.CUSTOM_DISPLAY_NAME),
-        validation={
-            _(STR.ERROR): lambda value: (value == None)
-            or (len(value) <= MAX_DISPLAY_NAME_LENGTH)
-        },
+    rotary_encoders_group.classes(DEFAULT_GROUP_CLASSES)
+    rotary_encoders_group.bind_visibility_from(device, "has_rotary_encoders")
+    with rotary_encoders_group:
+        with ui.row().classes("self-center"):
+            ui.label(_(STR.PULSE_WIDTH)).classes("text-sm self-center")
+            ui.number(
+                min=1,
+                max=254,
+                step=1,
+                precision=0,
+                prefix="x",
+            ).bind_value(device, "pulse_width_multiplier")
+
+    ## Profile group
+
+    profile_group = ui.expansion(_(STR.LOCAL_PROFILE), value=False, icon="inventory_2")
+    profile_group.classes(DEFAULT_GROUP_CLASSES)
+    profile_group.bind_visibility_from(device, "is_alive")
+    with profile_group:
+        check_profile_same_device = ui.checkbox(_(STR.CHECK_ID), value=True)
+        check_profile_same_device.classes("text-sm")
+        with check_profile_same_device:
+            ui.tooltip(_(STR.PROFILE_CHECK_TOOLTIP))
+        check_profile_buttons_map = ui.checkbox(
+            _(STR.INCLUDE_BTN_MAP), value=False
+        ).bind_visibility_from(device, "has_buttons_map")
+        with ui.row().classes("self-center"):
+            btn_load_profile = ui.button(
+                _(STR.LOAD), icon="file_upload", on_click=load_profile
+            )
+            btn_save_profile = ui.button(
+                _(STR.SAVE), icon="file_download", on_click=save_profile
+            )
+
+    ## Hardware ID group
+
+    hardware_id_group = ui.expansion(
+        _(STR.CUSTOM_HARDWARE_ID), value=False, icon="fingerprint"
     )
-    display_name_input.classes("w-full")
-    if is_running_in_windows():
-        display_name_input.bind_enabled_from(check_not_an_asshole, "value")
-    else:
-        display_name_input.enabled = False
-    custom_vid_input = ui.input(
-        label=_(STR.CUSTOM_VID),
-        placeholder=_(STR.VID_PID_FORMAT),
-        validation={_(STR.ERROR): hardware_id_validate},
-    )
-    custom_vid_input.classes("w-full")
-    custom_vid_input.bind_enabled_from(check_not_an_asshole, "value")
-    custom_pid_input = ui.input(
-        label=_(STR.CUSTOM_PID),
-        placeholder=_(STR.VID_PID_FORMAT),
-        validation={_(STR.ERROR): hardware_id_validate},
-    )
-    custom_pid_input.classes("w-full")
-    custom_pid_input.bind_enabled_from(check_not_an_asshole, "value")
-    with ui.row().classes("self-center"):
-        btn_hardware_id_update = ui.button(
-            _(STR.SAVE), icon="file_download", on_click=hardware_id_set
+    hardware_id_group.classes(DEFAULT_GROUP_CLASSES)
+    hardware_id_group.bind_visibility_from(device, "has_custom_hw_id")
+    with hardware_id_group:
+        read_only_notice = ui.label(_(STR.DANGER_ZONE)).classes(
+            "self-center text-lg text-red-600"
         )
-        btn_hardware_id_update.bind_enabled_from(check_not_an_asshole, "value")
-        btn_hardware_id_defaults = ui.button(
-            _(STR.DEFAULTS), icon="factory", on_click=hardware_id_factory_defaults
+        check_not_an_asshole = ui.checkbox(_(STR.I_AM_NOT_AN_ASSHOLE), value=False)
+        check_not_an_asshole.style("font-size: 50%")
+        check_not_an_asshole.on("update:model-value", on_update_hardware_id)
+        display_name_input = ui.input(
+            label=_(STR.CUSTOM_DISPLAY_NAME),
+            validation={
+                _(STR.ERROR): lambda value: (value == None)
+                or (len(value) <= MAX_DISPLAY_NAME_LENGTH)
+            },
         )
-        btn_hardware_id_defaults.bind_enabled_from(check_not_an_asshole, "value")
+        display_name_input.classes("w-full")
+        if is_running_in_windows():
+            display_name_input.bind_enabled_from(check_not_an_asshole, "value")
+        else:
+            display_name_input.enabled = False
+        custom_vid_input = ui.input(
+            label=_(STR.CUSTOM_VID),
+            placeholder=_(STR.VID_PID_FORMAT),
+            validation={_(STR.ERROR): hardware_id_validate},
+        )
+        custom_vid_input.classes("w-full")
+        custom_vid_input.bind_enabled_from(check_not_an_asshole, "value")
+        custom_pid_input = ui.input(
+            label=_(STR.CUSTOM_PID),
+            placeholder=_(STR.VID_PID_FORMAT),
+            validation={_(STR.ERROR): hardware_id_validate},
+        )
+        custom_pid_input.classes("w-full")
+        custom_pid_input.bind_enabled_from(check_not_an_asshole, "value")
+        with ui.row().classes("self-center"):
+            btn_hardware_id_update = ui.button(
+                _(STR.SAVE), icon="file_download", on_click=hardware_id_set
+            )
+            btn_hardware_id_update.bind_enabled_from(check_not_an_asshole, "value")
+            btn_hardware_id_defaults = ui.button(
+                _(STR.DEFAULTS), icon="factory", on_click=hardware_id_factory_defaults
+            )
+            btn_hardware_id_defaults.bind_enabled_from(check_not_an_asshole, "value")
+
 
 ##################################################################################################
 
@@ -633,6 +649,7 @@ else:
     auto_select_device()
 
 ui.run(
+    root=main_page,
     native=True,
     reload=False,
     title="ESP32 open-source sim wheel / button box",
