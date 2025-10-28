@@ -29,19 +29,20 @@ import sys
 
 ##################################################################################################
 
-print("ESP32SimWheelConfig --------------------------------------------")
+if __name__ == "__mp_main__":
+    print("ESP32SimWheelConfig --------------------------------------------")
 
-for arg in sys.argv:
-    arg_cf = arg.casefold()
-    if arg_cf == "en":
-        print("Language: English")
-        set_translation_locale("en")
-    if arg_cf == "es":
-        print("Language: Espanol")
-        set_translation_locale("es")
-    if arg_cf == "zh":
-        print("Language: Chinese")
-        set_translation_locale("zh")
+    for arg in sys.argv:
+        arg_cf = arg.casefold()
+        if arg_cf == "en":
+            print("Language: English")
+            set_translation_locale("en")
+        if arg_cf == "es":
+            print("Language: Espanol")
+            set_translation_locale("es")
+        if arg_cf == "zh":
+            print("Language: Chinese")
+            set_translation_locale("zh")
 
 ##################################################################################################
 
@@ -625,8 +626,12 @@ with hardware_id_group:
 
 ##################################################################################################
 
-auto_select_device()
-app.on_connect(on_app_startup)
+
+if __name__ == "__mp_main__":
+    app.on_connect(on_app_startup)
+else:
+    auto_select_device()
+
 ui.run(
     native=True,
     reload=False,
@@ -634,4 +639,5 @@ ui.run(
     window_size=(800, 600),
     uvicorn_logging_level="error",
     binding_refresh_interval=0.3,
+    message_history_length=0,
 )
