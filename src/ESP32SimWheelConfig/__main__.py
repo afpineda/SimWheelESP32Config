@@ -49,7 +49,7 @@ _ = gettext
 
 STR = EN
 MAX_DISPLAY_NAME_LENGTH = 72
-DEFAULT_GROUP_CLASSES = "text-h6 w-full"
+DEFAULT_GROUP_CLASSES = "text-h6 w-full text-bold"
 
 ##################################################################################################
 
@@ -377,6 +377,7 @@ async def reverse_right_axis_click():
     except Exception:
         notify_done(False)
 
+
 ##################################################################################################
 
 # Top header
@@ -414,14 +415,13 @@ with drawer:
 ## Security lock
 
 read_only_notice = ui.label(_(STR.READ_ONLY_NOTICE))
-read_only_notice.classes("self-center").tailwind.font_size("lg").text_color("red-600")
+read_only_notice.classes("text-lg text-red-600 text-lg self-center")
 read_only_notice.bind_visibility_from(device, "is_read_only")
 
 ## ALT buttons group
 
 alt_buttons_group = ui.expansion(_(STR.ALT_BUTTONS), value=True, icon="touch_app")
 alt_buttons_group.classes(DEFAULT_GROUP_CLASSES)
-alt_buttons_group.tailwind.font_weight("bold")
 alt_buttons_group.bind_visibility_from(device, "has_alt_buttons")
 with alt_buttons_group:
     ui.toggle({True: _(STR.ALT_MODE), False: _(STR.REGULAR_BUTTON)}).bind_value(
@@ -432,7 +432,6 @@ with alt_buttons_group:
 
 dpad_group = ui.expansion(_(STR.DPAD), value=True, icon="gamepad")
 dpad_group.classes(DEFAULT_GROUP_CLASSES)
-dpad_group.tailwind.font_weight("bold")
 dpad_group.bind_visibility_from(device, "has_dpad")
 with dpad_group:
     ui.toggle({True: _(STR.NAV), False: _(STR.REGULAR_BUTTON)}).bind_value(
@@ -443,7 +442,6 @@ with dpad_group:
 
 clutch_paddles_group = ui.expansion(_(STR.CLUTCH_PADDLES), value=True, icon="garage")
 clutch_paddles_group.classes(DEFAULT_GROUP_CLASSES)
-clutch_paddles_group.tailwind.font_weight("bold")
 clutch_paddles_group.bind_visibility_from(device, "has_clutch")
 with clutch_paddles_group:
     ui.radio(
@@ -455,8 +453,12 @@ with clutch_paddles_group:
             4: _(STR.LAUNCH_CTRL_LEFT_MASTER),
             5: _(STR.LAUNCH_CTRL_RIGHT_MASTER),
         }
-    ).classes("self-center").bind_value(device, "clutch_working_mode").style("font-size: 75%").props("size=xs")
-    ui.label(_(STR.BITE_POINT)).classes("self-center").tailwind.font_size("sm")
+    ).classes("self-center").bind_value(device, "clutch_working_mode").style(
+        "font-size: 75%"
+    ).props(
+        "size=xs"
+    )
+    ui.label(_(STR.BITE_POINT)).classes("self-center text-sm")
     bite_point_slider = ui.slider(min=0, max=254, step=1)
     bite_point_slider.bind_value_from(device, "bite_point")
     bite_point_slider.bind_enabled_from(
@@ -472,9 +474,9 @@ with clutch_paddles_group:
         throttle=0.25,
         leading_events=False,
     )
-    ui.label(_(STR.ANALOG_AXES)).classes("self-center").bind_visibility_from(
+    ui.label(_(STR.ANALOG_AXES)).classes("text-sm self-center").bind_visibility_from(
         device, "has_analog_clutch_paddles"
-    ).tailwind.font_size("sm")
+    )
     ui.button(
         _(STR.RECALIBRATE),
         icon="autorenew",
@@ -496,12 +498,11 @@ with clutch_paddles_group:
 
 battery_group = ui.expansion(_(STR.BATTERY), value=True, icon="battery_full")
 battery_group.classes(DEFAULT_GROUP_CLASSES)
-battery_group.tailwind.font_weight("bold")
 battery_group.bind_visibility_from(device, "has_battery")
 with battery_group:
-    ui.label(_(STR.SOC)).classes("self-center").tailwind.font_size("sm")
+    ui.label(_(STR.SOC)).classes("text-sm self-center")
     ui.linear_progress(show_value=False).bind_value_from(
-        device, "battery_soc", backward=lambda v: v / 100
+        device, "battery_soc", backward=lambda v: 0 if (v == None) else v / 100
     )
     ui.button(
         _(STR.RECALIBRATE),
@@ -515,7 +516,6 @@ with battery_group:
 
 buttons_map_group = ui.expansion(_(STR.BUTTONS_MAP), value=False, icon="map")
 buttons_map_group.classes(DEFAULT_GROUP_CLASSES)
-buttons_map_group.tailwind.font_weight("bold")
 buttons_map_group.bind_visibility_from(device, "has_buttons_map")
 with buttons_map_group:
     with ui.row().classes("self-center"):
@@ -540,11 +540,10 @@ with buttons_map_group:
 
 rotary_encoders_group = ui.expansion(_(STR.ROTARY_ENCODERS), value=False, icon="360")
 rotary_encoders_group.classes(DEFAULT_GROUP_CLASSES)
-rotary_encoders_group.tailwind.font_weight("bold")
 rotary_encoders_group.bind_visibility_from(device, "has_rotary_encoders")
 with rotary_encoders_group:
     with ui.row().classes("self-center"):
-        ui.label(_(STR.PULSE_WIDTH)).classes("self-center").tailwind.font_size("sm")
+        ui.label(_(STR.PULSE_WIDTH)).classes("text-sm self-center")
         ui.number(
             min=1,
             max=254,
@@ -557,11 +556,10 @@ with rotary_encoders_group:
 
 profile_group = ui.expansion(_(STR.LOCAL_PROFILE), value=False, icon="inventory_2")
 profile_group.classes(DEFAULT_GROUP_CLASSES)
-profile_group.tailwind.font_weight("bold")
 profile_group.bind_visibility_from(device, "is_alive")
 with profile_group:
     check_profile_same_device = ui.checkbox(_(STR.CHECK_ID), value=True)
-    check_profile_same_device.tailwind.font_size("sm")
+    check_profile_same_device.classes("text-sm")
     with check_profile_same_device:
         ui.tooltip(_(STR.PROFILE_CHECK_TOOLTIP))
     check_profile_buttons_map = ui.checkbox(
@@ -581,14 +579,10 @@ hardware_id_group = ui.expansion(
     _(STR.CUSTOM_HARDWARE_ID), value=False, icon="fingerprint"
 )
 hardware_id_group.classes(DEFAULT_GROUP_CLASSES)
-hardware_id_group.tailwind.font_weight("bold")
 hardware_id_group.bind_visibility_from(device, "has_custom_hw_id")
 with hardware_id_group:
-    read_only_notice = (
-        ui.label(_(STR.DANGER_ZONE))
-        .classes("self-center")
-        .tailwind.font_size("lg")
-        .text_color("red-600")
+    read_only_notice = ui.label(_(STR.DANGER_ZONE)).classes(
+        "self-center text-lg text-red-600"
     )
     check_not_an_asshole = ui.checkbox(_(STR.I_AM_NOT_AN_ASSHOLE), value=False)
     check_not_an_asshole.style("font-size: 50%")

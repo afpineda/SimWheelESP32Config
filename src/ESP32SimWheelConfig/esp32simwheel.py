@@ -446,7 +446,7 @@ class SimWheel:
             return False
 
     @property
-    def batter_soc(self) -> int | None:
+    def battery_soc(self) -> int | None:
         """Returns a percentage (0..100) of current battery charge"""
         if self._is_ready():
             try:
@@ -1051,15 +1051,19 @@ if __name__ == "__main__":
     for sim_wheel in enumerate(configurable_only=False):
         print("***********************************************************")
         print(f"Path: {sim_wheel.path}")
-        print(f"Current VID: {sim_wheel.vid}")
-        print(f"Current PID: {sim_wheel.pid}")
+        print(f"Current VID: {hex(sim_wheel.vid)}")
+        print(f"Current PID: {hex(sim_wheel.pid)}")
         print(f"Manufacturer: {sim_wheel.manufacturer}")
         print(f"Product: {sim_wheel.product_name}")
-        print(f"Device ID: {sim_wheel.device_id}")
+        print(f"Device ID: {hex(sim_wheel.device_id)}")
         print(f"Allow custom HW ID: {sim_wheel.has_custom_hw_id}")
-        print(f"Custom VID: {sim_wheel.custom_vid}")
-        print(f"Custom PID: {sim_wheel.custom_pid}")
+        print(f"Custom VID: {hex(sim_wheel.custom_vid)}")
+        print(f"Custom PID: {hex(sim_wheel.custom_pid)}")
         print(f"Security lock: {sim_wheel.is_read_only}")
+        print(f"Battery: {sim_wheel.has_battery}")
+        print(f"Battery calibration data: {sim_wheel.battery_calibration_available}")
+        print(f"Battery SOC: {sim_wheel.battery_soc}")
+        print(f"Rotary encoders: {sim_wheel.has_rotary_encoders}")
         print(f"Max FPS: {sim_wheel.max_fps}")
         tel_pc = sim_wheel.pixel_count(PixelGroup.GRP_TELEMETRY)
         bck_pc = sim_wheel.pixel_count(PixelGroup.GRP_BACKLIGHTS)
