@@ -74,7 +74,7 @@ Changes are saved to flash memory.
 
 Available on Bluetooth devices only.
 
-If you have two or more BLE devices using ESP32 open simwheel firmware,
+If you have two or more BLE devices using the ESP32 open source sim wheel firmware,
 **all of them will show the same display name, because they share the same hardware ID**.
 
 If you need two or more devices to exhibit a different display name,
@@ -85,3 +85,6 @@ However, this is not recommended.
 You may set a custom **display name** for all devices sharing the given VID and PID.
 If you clear the display name, a generic one will show on the next computer reboot.
 **Be warned: you could rename other non-related devices**.
+
+Windows computers require the device to be removed from the Bluetooth
+control panel then paired again after any change to the VID/PID.
