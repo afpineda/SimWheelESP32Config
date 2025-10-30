@@ -1069,9 +1069,9 @@ if __name__ == "__main__":
         bck_pc = sim_wheel.pixel_count(PixelGroup.GRP_BACKLIGHTS)
         ind_pc = sim_wheel.pixel_count(PixelGroup.GRP_INDIVIDUAL)
         print(f"Led count {tel_pc} / {bck_pc} / {ind_pc}")
-        sim_wheel.pixel_set(PixelGroup.GRP_TELEMETRY,0,255,0,0);
-        sim_wheel.pixel_set(PixelGroup.GRP_BACKLIGHTS,0,255,0,0);
-        sim_wheel.pixel_set(PixelGroup.GRP_INDIVIDUAL,0,255,0,0);
+        sim_wheel.pixel_set(PixelGroup.GRP_TELEMETRY, 0, 255, 0, 0)
+        sim_wheel.pixel_set(PixelGroup.GRP_BACKLIGHTS, 0, 255, 0, 0)
+        sim_wheel.pixel_set(PixelGroup.GRP_INDIVIDUAL, 0, 255, 0, 0)
         sim_wheel.pixel_show()
         print(f"Pulse width multiplier: {sim_wheel.pulse_width_multiplier}")
         print("Please, wait while loading user settings...")

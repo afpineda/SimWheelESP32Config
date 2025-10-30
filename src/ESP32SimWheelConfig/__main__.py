@@ -60,8 +60,6 @@ PROFILE_FILE_TYPE = ("Device profiles (*.swjson)",)
 
 ##################################################################################################
 
-buttons_map_data = []
-
 __buttons_map_columns = [
     {
         "headerName": _(STR.FIRMWARE_DEFINED),
@@ -123,9 +121,25 @@ def notify_done(result: bool = True):
 
 
 available_devices_ph = None
+drawer = None
+btn_map_reload = None
+btn_map_save = None
+btn_map_defaults = None
+buttons_map_grid = None
+check_profile_same_device = None
+profile_group = None
+btn_load_profile = None
+btn_save_profile = None
+check_profile_buttons_map = None
+custom_vid_input = None
+custom_pid_input = None
+display_name_input = None
+read_only_notice = None
+
 
 def _refresh_available_devices():
     print("Refreshing device list")
+    global available_devices_ph
     available_devices_ph.clear()
     count = 0
     for sim_wheel in esp32simwheel.enumerate():
@@ -201,13 +215,15 @@ def buttons_map_value_change(changes):
             multi_line=True,
         )
     else:
-        buttons_map_data[row_index][column_key] = value
-        device.set_button_map_tuple(buttons_map_data[row_index])
+        buttons_map_grid.options["rowData"][row_index][column_key] = value
+        device.set_button_map_tuple(buttons_map_grid.options["rowData"][row_index])
         # Ensure that the new value was accepted by the device
         try:
-            btn_map = device.get_button_map(buttons_map_data[row_index]["firmware"])
+            btn_map = device.get_button_map(
+                buttons_map_grid.options["rowData"][row_index]["firmware"]
+            )
             if btn_map != {}:
-                buttons_map_data[row_index] = btn_map
+                buttons_map_grid.options["rowData"][row_index] = btn_map
         except Exception:
             pass
     buttons_map_grid.update()
@@ -215,18 +231,20 @@ def buttons_map_value_change(changes):
 
 def _reload_buttons_map():
     print("Loading buttons map")
-    buttons_map_data.clear()
+    global buttons_map_grid
+    buttons_map_grid.options["rowData"].clear()
     try:
         for map in device.enumerate_buttons_map():
-            buttons_map_data.append(map)
-        print(f"Buttons map: {len(buttons_map_data)} items")
+            buttons_map_grid.options["rowData"].append(map)
+        print(f"Buttons map: {len(buttons_map_grid.options['rowData'])} items")
         print("Buttons map: Done!")
     except Exception:
-        buttons_map_data.clear()
+        buttons_map_grid.options["rowData"].clear()
         print("Buttons map: Failed !")
 
 
 async def reload_buttons_map():
+    global buttons_map_grid
     buttons_group_enable(False)
     notification = please_wait()
     await run.io_bound(_reload_buttons_map)
@@ -235,7 +253,7 @@ async def reload_buttons_map():
     notification.dismiss()
 
 
-async def save_now():
+def save_now():
     buttons_group_enable(False)
     device.save_now()
     notify_done()
@@ -245,10 +263,15 @@ async def save_now():
 async def buttons_map_factory_defaults():
     device.reset_buttons_map()
     await reload_buttons_map()
-    await save_now()
+    save_now()
 
 
 def profile_group_enable(enabled: bool = True):
+    global profile_group
+    global btn_load_profile
+    global btn_save_profile
+    global check_profile_buttons_map
+    global check_profile_same_device
     profile_group.enabled = enabled
     btn_load_profile.enabled = enabled
     btn_save_profile.enabled = enabled
@@ -336,7 +359,7 @@ def on_update_hardware_id():
     display_name_input.value = get_display_name_from_registry(vid, pid)
 
 
-async def hardware_id_factory_defaults():
+def hardware_id_factory_defaults():
     try:
         device.reset_custom_hardware_id()
         vid = device.custom_vid
@@ -349,7 +372,7 @@ async def hardware_id_factory_defaults():
         notify_done(False)
 
 
-async def hardware_id_set():
+def hardware_id_set():
     try:
         display_name = display_name_input.value
         if (display_name != None) and (len(display_name) > MAX_DISPLAY_NAME_LENGTH):
@@ -365,7 +388,7 @@ async def hardware_id_set():
         notify_done(False)
 
 
-async def reverse_left_axis_click():
+def reverse_left_axis_click():
     try:
         device.reverse_left_axis()
         notify_done()
@@ -373,7 +396,7 @@ async def reverse_left_axis_click():
         notify_done(False)
 
 
-async def reverse_right_axis_click():
+def reverse_right_axis_click():
     try:
         device.reverse_right_axis()
         notify_done()
@@ -382,6 +405,7 @@ async def reverse_right_axis_click():
 
 
 ##################################################################################################
+
 
 def main_page():
 
@@ -392,10 +416,10 @@ def main_page():
             ui.button(icon="menu").on("click", lambda: drawer.toggle()).props(
                 "flat color=white dense"
             )
-            headerLabel = ui.label().classes(
+            header_label = ui.label().classes(
                 "text-h3 align-middle tracking-wide ellipsis"
             )
-            headerLabel.bind_text_from(
+            header_label.bind_text_from(
                 device,
                 "is_alive",
                 backward=lambda is_alive_value: (
@@ -405,6 +429,7 @@ def main_page():
 
     # Drawer
 
+    global drawer
     drawer = ui.left_drawer(value=False).props("behavior=desktop")
     drawer.on("show", refresh_available_devices)
     with drawer:
@@ -422,6 +447,7 @@ def main_page():
 
     ## Security lock
 
+    global read_only_notice
     read_only_notice = ui.label(_(STR.READ_ONLY_NOTICE))
     read_only_notice.classes("text-lg text-red-600 text-lg self-center")
     read_only_notice.bind_visibility_from(device, "is_read_only")
@@ -497,12 +523,12 @@ def main_page():
             "self-center"
         )
         with ui.row().classes("self-center"):
-            btn_reverse_left_axis = ui.button(
+            ui.button(
                 _(STR.REVERSE_LEFT_AXIS),
                 icon="invert_colors",
                 on_click=reverse_left_axis_click,
             ).bind_visibility_from(device, "has_analog_clutch_paddles")
-            btn_reverse_right_axis = ui.button(
+            ui.button(
                 _(STR.REVERSE_RIGHT_AXIS),
                 icon="invert_colors",
                 on_click=reverse_right_axis_click,
@@ -533,6 +559,9 @@ def main_page():
     buttons_map_group.bind_visibility_from(device, "has_buttons_map")
     with buttons_map_group:
         with ui.row().classes("self-center"):
+            global btn_map_reload
+            global btn_map_save
+            global btn_map_defaults
             btn_map_reload = ui.button(
                 _(STR.RELOAD), icon="sync", on_click=reload_buttons_map
             )
@@ -541,10 +570,11 @@ def main_page():
                 _(STR.DEFAULTS), icon="factory", on_click=buttons_map_factory_defaults
             )
 
+        global buttons_map_grid
         buttons_map_grid = ui.aggrid(
             {
                 "columnDefs": __buttons_map_columns,
-                "rowData": buttons_map_data,
+                "rowData": [],
                 "rowSelection": "single",
                 "stopEditingWhenCellsLoseFocus": True,
             }
@@ -578,16 +608,13 @@ def main_page():
         check_profile_same_device.classes("text-sm")
         with check_profile_same_device:
             ui.tooltip(_(STR.PROFILE_CHECK_TOOLTIP))
+        global check_profile_buttons_map
         check_profile_buttons_map = ui.checkbox(
             _(STR.INCLUDE_BTN_MAP), value=False
         ).bind_visibility_from(device, "has_buttons_map")
         with ui.row().classes("self-center"):
-            btn_load_profile = ui.button(
-                _(STR.LOAD), icon="file_upload", on_click=load_profile
-            )
-            btn_save_profile = ui.button(
-                _(STR.SAVE), icon="file_download", on_click=save_profile
-            )
+            ui.button(_(STR.LOAD), icon="file_upload", on_click=load_profile)
+            ui.button(_(STR.SAVE), icon="file_download", on_click=save_profile)
 
     ## Hardware ID group
 
@@ -603,6 +630,7 @@ def main_page():
         check_not_an_asshole = ui.checkbox(_(STR.I_AM_NOT_AN_ASSHOLE), value=False)
         check_not_an_asshole.style("font-size: 50%")
         check_not_an_asshole.on("update:model-value", on_update_hardware_id)
+        global display_name_input
         display_name_input = ui.input(
             label=_(STR.CUSTOM_DISPLAY_NAME),
             validation={
@@ -615,6 +643,8 @@ def main_page():
             display_name_input.bind_enabled_from(check_not_an_asshole, "value")
         else:
             display_name_input.enabled = False
+        global custom_vid_input
+        global custom_pid_input
         custom_vid_input = ui.input(
             label=_(STR.CUSTOM_VID),
             placeholder=_(STR.VID_PID_FORMAT),
