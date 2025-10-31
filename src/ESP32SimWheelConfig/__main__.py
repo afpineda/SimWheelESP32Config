@@ -332,20 +332,21 @@ def _save_profile(filename: str) -> bool:
         finally:
             f.close()
         return True
-    except Exception:
+    except Exception as e:
+        print(f"Error: {e}")
         return False
 
 
 async def save_profile():
     filename = await app.native.main_window.create_file_dialog(
-        webview.FileDialog.SAVE, # DevNote: webview.SAVE_DIALOG is deprecated and does not work
+        webview.FileDialog.SAVE,  # DevNote: webview.SAVE_DIALOG is deprecated and does not work
         allow_multiple=False,
         file_types=PROFILE_FILE_TYPE,
     )
     if filename:
         notification = please_wait()
         profile_group_enable(False)
-        done = await run.io_bound(_save_profile, filename)
+        done = await run.io_bound(_save_profile, filename[0])
         notification.dismiss()
         profile_group_enable(True)
         notify_done(done)
@@ -600,6 +601,9 @@ def main_page():
 
     ## Profile group
 
+    global profile_group
+    global check_profile_same_device
+    global check_profile_buttons_map
     profile_group = ui.expansion(_(STR.LOCAL_PROFILE), value=False, icon="inventory_2")
     profile_group.classes(DEFAULT_GROUP_CLASSES)
     profile_group.bind_visibility_from(device, "is_alive")
@@ -608,13 +612,18 @@ def main_page():
         check_profile_same_device.classes("text-sm")
         with check_profile_same_device:
             ui.tooltip(_(STR.PROFILE_CHECK_TOOLTIP))
-        global check_profile_buttons_map
         check_profile_buttons_map = ui.checkbox(
             _(STR.INCLUDE_BTN_MAP), value=False
         ).bind_visibility_from(device, "has_buttons_map")
         with ui.row().classes("self-center"):
-            ui.button(_(STR.LOAD), icon="file_upload", on_click=load_profile)
-            ui.button(_(STR.SAVE), icon="file_download", on_click=save_profile)
+            global btn_load_profile
+            global btn_save_profile
+            btn_load_profile = ui.button(
+                _(STR.LOAD), icon="file_upload", on_click=load_profile
+            )
+            btn_save_profile = ui.button(
+                _(STR.SAVE), icon="file_download", on_click=save_profile
+            )
 
     ## Hardware ID group
 
