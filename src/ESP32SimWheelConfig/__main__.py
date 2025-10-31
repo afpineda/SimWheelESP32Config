@@ -338,8 +338,8 @@ def _save_profile(filename: str) -> bool:
 
 async def save_profile():
     filename = await app.native.main_window.create_file_dialog(
+        webview.FileDialog.SAVE, # DevNote: webview.SAVE_DIALOG is deprecated and does not work
         allow_multiple=False,
-        dialog_type=webview.SAVE_DIALOG,
         file_types=PROFILE_FILE_TYPE,
     )
     if filename:
