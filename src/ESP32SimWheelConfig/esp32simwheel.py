@@ -756,8 +756,8 @@ class SimWheel:
         Raises AnotherAppInterferesError if another application is trying to do the same thing.
         The user should try later in such a case.
         """
-        if (raw_input_number < 0) or (raw_input_number >= 64):
-            raise ValueError("rawInputNumber not in the range 0..63")
+        if (raw_input_number < 0) or (raw_input_number >= 128):
+            raise ValueError("raw_input_number not in the range 0..127")
         if self._is_ready():
             if self.__data_minor_version == 0:
                 return {}
@@ -790,8 +790,8 @@ class SimWheel:
         user_input_number_alt_mode: int,
     ):
         """Sets an user-defined button mapping"""
-        if (raw_input_number < 0) or (raw_input_number >= 64):
-            raise ValueError("raw_input_number not in the range 0..63")
+        if (raw_input_number < 0) or (raw_input_number >= 128):
+            raise ValueError("raw_input_number not in the range 0..127")
         if (user_input_number < 0) or (user_input_number >= 128):
             raise ValueError("user_input_number not in the range 0..127")
         if (user_input_number_alt_mode < 0) or (user_input_number_alt_mode >= 128):
@@ -841,13 +841,13 @@ class SimWheel:
         Remarks:
             May take a few seconds to run.
         """
-        for raw in range(64):
+        for raw in range(128):
             btn_map = self.get_button_map(raw)
             if btn_map != {}:
                 yield btn_map
 
     def reset_custom_hardware_id(self):
-        """Reset custom hardware ID to factory defaults after next reboot (BLE only)"""
+        """Reset custom hardware ID to factory defaults after next reboot"""
         if self._is_ready():
             try:
                 self._send_hardware_id_report(
