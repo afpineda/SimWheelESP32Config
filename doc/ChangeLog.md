@@ -1,5 +1,24 @@
 # Change log
 
+## 2.7.5
+
+- Support for 128 firmware-defined input numbers
+  (firmware version 8.0.0).
+
+## 2.7.4
+
+- Language selection was not working.
+  This fixes the issue.
+
+## 2.7.3
+
+- Bug fix regarding the display of the battery level.
+- Updated External dependencies:
+  - NiceGUI 3.1.0
+  - HidAPI 0.14.0.post4
+  - Other indirect dependencies.
+- The build script is now based on nicegui-pack.
+
 ## 2.7.2
 
 - Minor UI styling for legibility.

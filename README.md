@@ -12,7 +12,8 @@ A companion app for the
 - Choose working mode of clutch paddles, "ALT" buttons and/or directional pad.
 - Set clutch bite point.
 - Force auto-calibration of analog clutch paddles.
-- Force battery auto-calibration (not available if the battery was "factory-calibrated" previously).
+- Force battery auto-calibration
+  (not available if the battery was "factory-calibrated" previously).
 - For rotary encoders, set the pulse width multiplier.
 - Map hardware buttons to user-defined HID buttons.
 - Supports all firmware versions to date (data versions 1.0 to 1.6).
@@ -35,12 +36,14 @@ A companion app for the
 
 ### User interface not showing
 
-As a workaround, open your web browser and try one of these URL: `localhost:8000` or `localhost:8080`.
+As a workaround, open your web browser and try one of these URL:
+`localhost:8000` or `localhost:8080`.
 The user interface will show in your browser.
 
 If your operating system is Windows 11, this issue is caused by some kind
 of security measure for files downloaded from the Internet.
-Download the ZIP file again and follow the [installation notes](./doc/Install_en.md) carefully.
+Download the ZIP file again and follow the
+[installation notes](./doc/Install_en.md) carefully.
 
 ## Other
 
