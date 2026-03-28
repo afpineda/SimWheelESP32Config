@@ -989,9 +989,9 @@ class SimWheel:
                 {
                     "firmware": i,
                     "user": i,
-                    "userAltMode": i + 64,
+                    "userAltMode": (i + 64) % 128,
                 }
-                for i in range(0, 64)
+                for i in range(0, 128)
             ]
 
         return result
