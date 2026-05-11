@@ -1,5 +1,9 @@
 # Change log
 
+## 2.7.6
+
+- Support for data version 1.7 (firmware version 8.1.0)
+
 ## 2.7.5
 
 - Support for 128 firmware-defined input numbers
